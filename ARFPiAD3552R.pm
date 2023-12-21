@@ -19,10 +19,45 @@ package ARFPiAD3552R;
 # 18: GPIO 24, LDAC for DAC C on ET55930-6039
 
 use Data::Dumper;
-use System::Info;
+#use System::Info;
+use ET55930_6039_Environment;
+use ARFPiGPIO;
+use ARFPiGenericSerial;
 use ARFConvert;
 
+sub BitBangModDACsSetup {
+    ## Input: None
+    ## Output: None
+    ## This routine sets up the Mod DAC SPI Bus
+    our @SPIBus_ModDACs = ARFPiGenericSerial::BitBangSPI_Setup ( 
+        $SCLK_ModDACs,
+        $MOSI_ModDACs,
+        $MISO_ModDACs
+    );
 
+    ARFPiGPIO::InitializeGPIO( $CS_ModDACA, "out", 1);
+    ARFPiGPIO::InitializeGPIO( $CS_ModDACB, "out", 1);
+    ARFPiGPIO::InitializeGPIO( $CS_ModDACC, "out", 1);
+
+    ARFPiGPIO::InitializeGPIO( $LDAC_ModDACA, "out", 1);
+    ARFPiGPIO::InitializeGPIO( $LDAC_ModDACB, "out", 1);
+    ARFPiGPIO::InitializeGPIO( $LDAC_ModDACC, "out", 1);
+}
+
+sub BitBangModDACsCleanUp {
+    ## Input: None
+    ## Output: None
+    ## This routine cleans up the Mod DAC SPI Bus
+    ARFPiGenericSerial::BitBangSPI_CleanUp ( @SPIBus_ModDACs );
+
+    ARFPiGPIO::UninitializeGPIO( $CS_ModDACA );
+    ARFPiGPIO::UninitializeGPIO( $CS_ModDACB );
+    ARFPiGPIO::UninitializeGPIO( $CS_ModDACC );
+
+    ARFPiGPIO::UninitializeGPIO( $LDAC_ModDACA );
+    ARFPiGPIO::UninitializeGPIO( $LDAC_ModDACB );
+    ARFPiGPIO::UninitializeGPIO( $LDAC_ModDACC );
+}
 
 sub BitBangDACOutput {
     ## Input 1: DAC A, B, or C in the form of "A0", "B0", or "C0"
@@ -35,47 +70,44 @@ sub BitBangDACOutput {
     my $DACCode = shift;
     my $Readback = shift;
     
-    my $SCLK = 21; #GPIO21, Physical Pin 40
-    my $MOSI = 20; #GPIO20, Physcial Pin 38
-    my $MISO = 19; #GPIO19, Physcial Pin 35
     my $ChipSelect;
     my $DACRegisterMSBs;
     my $DACRegisterLSBs;
     if ($DAC == "A0") {
-        $ChipSelect = 18; #GPIO18, Physical Pin 24
+        $ChipSelect = $CS_ModDACA;
         $DACRegisterMSBs = 0x2A;
         $DACRegisterLSBs = 0x29;
-        $LDAC = 4; #GPIO4, Physical Pin 7
+        $LDAC = $LDAC_ModDACA;
     } elsif ($DAC == "A1") {
-        $ChipSelect = 18; #GPIO18, Physical Pin 24
+        $ChipSelect = $CS_ModDACA;
         $DACRegisterMSBs = 0x2C;
         $DACRegisterLSBs = 0x2B;
-        $LDAC = 4; #GPIO4, Physical Pin 7
+        $LDAC = $LDAC_ModDACA;
     } elsif ($DAC == "B0") {
-        $ChipSelect = 17; #GPIO17, Physical Pin 11
+        $ChipSelect = $CS_ModDACB;
         $DACRegisterMSBs = 0x2A;
         $DACRegisterLSBs = 0x29;
-        $LDAC = 25; #GPIO25, Physical Pin 22
+        $LDAC = $LDAC_ModDACCB;
     } elsif ($DAC == "B1") {
-        $ChipSelect = 17; #GPIO17, Physical Pin 11
+        $ChipSelect = $CS_ModDACB;
         $DACRegisterMSBs = 0x2C;
         $DACRegisterLSBs = 0x2B;
-        $LDAC = 25; #GPIO25, Physical Pin 22
+        $LDAC = 2$LDAC_ModDACB;
     } elsif ($DAC == "C0") {
-        $ChipSelect = 16; #GPIO16, Physical Pin 36
+        $ChipSelect = $CS_ModDACC;
         $DACRegisterMSBs = 0x2A;
         $DACRegisterLSBs = 0x29;
-        $LDAC = 25; #GPIO24, Physical Pin 18
+        $LDAC = $LDAC_ModDACC;
     } elsif ($DAC == "C1") {
-        $ChipSelect = 16; #GPIO16, Physical Pin 36
+        $ChipSelect = $CS_ModDACC;
         $DACRegisterMSBs = 0x2C;
         $DACRegisterLSBs = 0x2B;
-        $LDAC = 25; #GPIO24, Physical Pin 18
+        $LDAC = $LDAC_ModDACC;
     } else {
-        $ChipSelect = 16; #GPIO16, Physical Pin 36
+        $ChipSelect = 1$CS_ModDACC;
         $DACRegisterMSBs = 0x2C;
         $DACRegisterLSBs = 0x2B;
-        $LDAC = 25; #GPIO24, Physical Pin 18
+        $LDAC = $LDAC_ModDACC;
     }
 
     # Convert the DAC Code to Binary
@@ -95,15 +127,16 @@ sub BitBangDACOutput {
     my $LSBsToBeWritten = $DACRegisterLSBsBinaryString . $DACCodeLSBs;
 
     # Check if we are on a Raspberry Pi
-    my $System = System::Info -> new;
-    my $CPUType = $System -> cpu_type;
-    print Dumper ($CPUType);
+    #my $System = System::Info -> new;
+    #my $CPUType = $System -> cpu_type;
+    my $CPUType = 1;
+    
     ################# ONLY TO BE RUN ON RASPBERRY PI #################
     if ($CPUType == "tbd") {
         # Make Sure LDAC Pin is Low
 
-        ARFPiSerial::BitBangSPIWrite( $SCLK , $MOSI , $MSBsToBeWritten , $ChipSelect );
-        ARFPiSerial::BitBangSPIWrite( $SCLK , $MOSI , $LSBsToBeWritten , $ChipSelect );
+        ARFPiGenericSerial::BitBangSPIWrite( @SPIBus_ModDACs , $MSBsToBeWritten , $ChipSelect );
+        ARFPiGenericSerial::BitBangSPIWrite( @SPIBus_ModDACs , $LSBsToBeWritten , $ChipSelect );
 
         if ($Readback == 1) {
             #Not reading back right now
