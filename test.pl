@@ -3,10 +3,10 @@
 use lib "./";
 use Data::Dumper;
 #use System::Info;
-use ET55930_6039_Environment;
 use ARFConvert;
 use ARFPiAD3552R;
-
+require("ET55930_6039_Environment.pm");
+our $SCLK_ABUS;
 
 my $Data = 314;
 
