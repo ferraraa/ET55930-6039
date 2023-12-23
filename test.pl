@@ -6,7 +6,7 @@ use Data::Dumper;
 use ARFConvert;
 use ARFPiAD3552R;
 require("ET55930_6039_Environment.pm");
-our $SCLK_ABUS;
+#our $SCLK_ABUS;
 
 my $Data = 314;
 
