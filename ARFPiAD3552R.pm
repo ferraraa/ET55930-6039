@@ -92,7 +92,7 @@ sub BitBangDACOutput {
         $ChipSelect = $CS_ModDACB;
         $DACRegisterMSBs = 0x2C;
         $DACRegisterLSBs = 0x2B;
-        $LDAC = 2$LDAC_ModDACB;
+        $LDAC = $LDAC_ModDACB;
     } elsif ($DAC == "C0") {
         $ChipSelect = $CS_ModDACC;
         $DACRegisterMSBs = 0x2A;
@@ -104,7 +104,7 @@ sub BitBangDACOutput {
         $DACRegisterLSBs = 0x2B;
         $LDAC = $LDAC_ModDACC;
     } else {
-        $ChipSelect = 1$CS_ModDACC;
+        $ChipSelect = $CS_ModDACC;
         $DACRegisterMSBs = 0x2C;
         $DACRegisterLSBs = 0x2B;
         $LDAC = $LDAC_ModDACC;

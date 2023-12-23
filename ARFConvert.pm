@@ -1,6 +1,8 @@
 package ARFConvert;
 
 use Data::Dumper;
+use Bit::Vector;
+
 sub ToBinary {
     ## Input 1: Decimal or Hexadecimal Number of any size.
         # Example Decimal: 314, 420, 1234
@@ -38,6 +40,12 @@ sub ToBinaryLeadingZeroes {
     
     return @BinaryArray
 
+}
+
+sub BinaryToDecimal{
+	my $BinaryString = shift;
+	my $ConvertedNum = Bit::Vector->new_Bin( 32, $BinaryString );
+	$ConvertedNum->to_Dec();
 }
 
 1;
