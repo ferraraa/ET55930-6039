@@ -13,7 +13,7 @@ use ARFConvert;
 
 my $BinaryString = "0000000000000001";
 print Dumper($BinaryString);
-my $ConvertedNum = Bit::Vector->new_Bin( 16, $BinaryString );
+my $ConvertedNum = Bit::Vector->new_Bin( 16, 0000000000000001 );
 print Dumper($ConvertedNum);
 $ConvertedNum->to_Dec();
 print Dumper($ConvertedNum);
