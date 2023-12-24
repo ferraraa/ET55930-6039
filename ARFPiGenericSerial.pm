@@ -30,7 +30,11 @@ sub BitBangSPI_CleanUp {
     ## Output: None
     ## This routine cleans up a SPI Bus using Sysfs GPIO methods.
     my @SPIBus = shift;
-
+	print Dumper($SPIBus[0]);
+	
+	print Dumper($SPIBus[1]);
+	
+	print Dumper($SPIBus[2]);
     system ("echo " . $SPIBus[ 0 ] . " >/sys/class/gpio/unexport");
     system ("echo " . $SPIBus[ 1 ] . " >/sys/class/gpio/unexport");
     system ("echo " . $SPIBus[ 2 ] . " >/sys/class/gpio/unexport");
