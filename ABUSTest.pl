@@ -4,7 +4,7 @@ use lib "./";
 use strict;
 use warnings;
 use ET55930_6039_Environment;
-
+use Bit::Vector;
 use Data::Dumper;
 use ARFPiGPIO;
 use ARFPiGenericSerial;
