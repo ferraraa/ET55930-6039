@@ -44,7 +44,7 @@ sub ToBinaryLeadingZeroes {
 
 sub BinaryToDecimal{
 	my $BinaryString = shift;
-	
+	print Dumper($BinaryString);
 	my $ConvertedNum = Bit::Vector->new_Bin( 16, $BinaryString );
 	print Dumper($ConvertNum);
 	$ConvertedNum->to_Dec();
