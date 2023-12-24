@@ -1,3 +1,41 @@
+package ET55930_6039_Environment;
+require Exporter;
+our (@EXPORT) = qw (
+	$MOSI_ModDACs
+	$MISO_ModDACs
+	$SCLK_ModDACs
+	$CS_ModDACA
+	$CS_ModDACB
+	$CS_ModDACC
+	$LDAC_ModDACA
+	$LDAC_ModDACB
+	$LDAC_ModDACC
+	$MOSI_ABUS 
+	$MISO_ABUS 
+	$SCLK_ABUS 
+	$CS_ABUS
+	$SCLK_ShiftReg 
+	$Data_ShiftReg
+	$Latch_ShiftReg
+	$EncodedCS0_ShiftReg
+	$EncodedCS1_ShiftReg
+	$EncodedCS2_ShiftReg
+	$EncodedCS3_ShiftReg
+	$PulseTXp
+	$PulseTXn
+	$PulseDelayEn 
+	@ShiftReg_ET1     
+	@ShiftReg_ET2    
+	@ShiftReg_SrcOut  
+	@ShiftReg_YIGDiv  
+	@ShiftReg_BotGrp3 
+	@ShiftReg_RFPathDC
+	@ShiftReg_TopGrp2 
+	@ShiftReg_TopGrp1 
+	@ShiftReg_PulseModDelay
+	@ShiftReg_MechStepAtten
+);
+
 ##############################################
 ## Raspberry Pi 40 Pin Connector Assignment ##
 ##############################################
@@ -67,3 +105,4 @@ our @ShiftReg_MechStepAtten =   [ 1 , 1 , 1 , 0 ];
 
 
 1;
+
