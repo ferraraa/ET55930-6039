@@ -11,6 +11,10 @@ use ARFPiGenericSerial;
 use ABUS;
 use ARFConvert;
 
+my $BinaryString = "0000000000000001";
+print Dumper($BinaryString);
+my $ConvertedNum = Bit::Vector->new_Bin( 16, $BinaryString );
+print Dumper($ConvertedNum);
 
 
 my @PiSPI0 = ARFPiGenericSerial::BitBangSPI_Setup ( $SCLK_ABUS, $MOSI_ABUS, $MISO_ABUS );
