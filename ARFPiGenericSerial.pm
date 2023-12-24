@@ -22,7 +22,7 @@ sub BitBangSPI_Setup {
     system ("echo 0 >/sys/class/gpio/gpio" . $SCLKpin . "/value");
     system ("echo 0 >/sys/class/gpio/gpio" . $MOSIpin . "/value");
 	
-    return [ $SCLKpin , $MOSIpin , $MISOpin ];
+    return ( $SCLKpin , $MOSIpin , $MISOpin );
 }
 
 sub BitBangSPI_CleanUp {
