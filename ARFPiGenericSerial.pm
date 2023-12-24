@@ -30,11 +30,7 @@ sub BitBangSPI_CleanUp {
     ## Output: None
     ## This routine cleans up a SPI Bus using Sysfs GPIO methods.
     my @SPIBus = (shift,shift,shift);
-	print Dumper($SPIBus[0]);
 	
-	print Dumper($SPIBus[1]);
-	
-	print Dumper($SPIBus[2]);
     system ("echo " . $SPIBus[ 0 ] . " >/sys/class/gpio/unexport");
     system ("echo " . $SPIBus[ 1 ] . " >/sys/class/gpio/unexport");
     system ("echo " . $SPIBus[ 2 ] . " >/sys/class/gpio/unexport");
@@ -69,7 +65,7 @@ sub BitBangShiftReg_CleanUp {
     ## Input 1: Shift Register Array in the form of [CLK, Data, Latch]
     ## Output: None
     ## This routine cleans up a shift register bus.
-    my @ShiftRegBus = shift;
+    my @ShiftRegBus = (shift,shift,shift);
 
     system ("echo " . $ShiftRegBus[ 0 ] . " >/sys/class/gpio/unexport");
     system ("echo " . $ShiftRegBus[ 1 ] . " >/sys/class/gpio/unexport");
@@ -82,7 +78,7 @@ sub BitBangSPIWrite {
     ## Input 3: Data in the form of a Binary STRING
     ## Output: None
     ## This routine writes via SPI Protocol
-    my @SPIBus = shift;
+    my @SPIBus =  (shift,shift,shift);
     my $CSpin = shift;
     my $Data = shift;
 
@@ -115,7 +111,7 @@ sub BitBangSPIRead {
     ## Input 6: Number of Bits that need to be read
     ## Output: Binary Bit Stream of What is Read
     ## This routine reads via SPI Protocol
-    my @SPIBus = shift;
+    my @SPIBus = (shift,shift,shift);
     my $CSpin = shift;
     my $Register = shift;
     my $NumBitsToRead = shift;
@@ -155,7 +151,7 @@ sub BitBangShiftRegShiftNoLatch {
     ## Input 2: Data to be shifted, in the form of a binary string.
     ## Output: None
     ## This routine shifts data through a shift register bus
-    my @ShiftRegBus = shift;
+    my @ShiftRegBus = (shift,shift,shift);
     my $Data = shift;
     
     my @DataBits = split(//, $Data);

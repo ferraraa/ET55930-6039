@@ -6,7 +6,7 @@ sub BitBangABUSRead {
     ## Input 2: Intialized Chip Select GPIO Pin
     ## Output: None
     ## This routine writes via SPI Protocol
-    my @SPIBus = shift;
+    my @SPIBus = (shift,shift,shift);
     my $CSpin = shift;
 
 
@@ -59,3 +59,5 @@ sub BitBangABUSRead {
 		$ABUSADCCodes[ $ABUSReadCount ] = ARFConvert::BinaryToDecimal( $ABUSBitString );
 	}
 }
+
+1;
