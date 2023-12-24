@@ -43,7 +43,7 @@ sub ToBinaryLeadingZeroes {
 }
 
 sub BinaryToDecimal{
-	my $BinaryString = shift;
+	my $BinaryString = "0000000000000000";
 	print Dumper($BinaryString);
 	my $ConvertedNum = Bit::Vector->new_Bin( 16, $BinaryString );
 	print Dumper($ConvertNum);
