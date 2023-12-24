@@ -1,5 +1,7 @@
 package ET55930_6039_Environment;
 require Exporter;
+our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
+@ISA = qw(Exporter);
 our (@EXPORT) = qw (
 	$MOSI_ModDACs
 	$MISO_ModDACs

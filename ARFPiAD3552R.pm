@@ -20,7 +20,6 @@ package ARFPiAD3552R;
 
 use Data::Dumper;
 #use System::Info;
-use ET55930_6039_Environment;
 use ARFPiGPIO;
 use ARFPiGenericSerial;
 use ARFConvert;
