@@ -127,7 +127,7 @@ my $ABUSRegLine;
 open my $ABUSRegFileHANDLE, $ABUSRegMap or die "Could not open $ABUSRegMap: $!";
 my $ABUSRegHeader = <$ABUSRegFileHANDLE>; # This line is header line
 my @ParsedABUSHeader = split('\t', $ABUSRegHeader );
-
+print Dumper(@ParsedABUSHeader);
 close $ABUSRegFileHANDLE;
 
 	
