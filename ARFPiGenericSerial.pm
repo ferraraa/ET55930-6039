@@ -1,5 +1,5 @@
 package ARFPiGenericSerial;
-
+use Data::Dumper;
 
 sub BitBangSPI_Setup {
     ## Input 1: Yet-to-be intialized GPIO Pin for SCLK
