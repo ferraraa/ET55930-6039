@@ -58,6 +58,8 @@ sub BitBangABUSRead {
 		$ABUSBitString = join("", @ABUSDataBits);
 		$ABUSADCCodes[ $ABUSReadCount ] = ARFConvert::BinaryToDecimal( $ABUSBitString );
 	}
+	
+	return @ABUSADCCodes;
 }
 
 1;

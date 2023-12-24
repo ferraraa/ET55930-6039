@@ -15,8 +15,8 @@ use ARFConvert;
 
 my @PiSPI0 = ARFPiGenericSerial::BitBangSPI_Setup ( $SCLK_ABUS, $MOSI_ABUS, $MISO_ABUS );
 ARFPiGPIO::InitializeGPIO( $CS_ABUS, "out", 1);
-my $ABUSData = ABUS::BitBangABUSRead ( @PiSPI0, $CS_ABUS );
+my @ABUSData = ABUS::BitBangABUSRead ( @PiSPI0, $CS_ABUS );
 ARFPiGenericSerial::BitBangSPI_CleanUp ( @PiSPI0 );
 ARFPiGPIO::UninitializeGPIO( $CS_ABUS );
 
-print Dumper($ABUSData);
+print Dumper(@ABUSData);
