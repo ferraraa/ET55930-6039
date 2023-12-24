@@ -3,6 +3,9 @@ require Exporter;
 our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
 @ISA = qw(Exporter);
 our (@EXPORT) = qw (
+	$ProjectDir
+	$RegisterDir
+	$ABUSDir
 	$MOSI_ModDACs
 	$MISO_ModDACs
 	$SCLK_ModDACs
@@ -36,7 +39,16 @@ our (@EXPORT) = qw (
 	@ShiftReg_TopGrp1 
 	@ShiftReg_PulseModDelay
 	@ShiftReg_MechStepAtten
+
 );
+
+our $ProjectDir = "/projects/ET55930-6039/";
+
+our $ABUSDir = $ProjectDir . "ABUS/":
+our $ABUSRegMap = $ABUSDir . "RegisterMap_ABUS.txt";
+
+our $RegisterDir = $ProjectDir . "ControlRegisters/";
+
 
 ##############################################
 ## Raspberry Pi 40 Pin Connector Assignment ##
@@ -81,11 +93,12 @@ our $PulseDelayEn = 23; # 40 Pin Connector 16
 ##############################################
 
 
+	
 
 
-#############################
-## Shift Register Decoding ##
-#############################
+#########################################
+## Shift Register Chip Select Decoding ##
+#########################################
 
 # There 10 banks of shift registers on ET55930-6039. 4 GPIO Pins
 # have been assigned to encoding the 10 (16 possible) banks.
@@ -100,11 +113,24 @@ our @ShiftReg_TopGrp1 =         [ 1 , 0 , 0 , 0 ];
 our @ShiftReg_PulseModDelay =   [ 1 , 0 , 0 , 1 ];
 our @ShiftReg_MechStepAtten =   [ 1 , 1 , 1 , 0 ];
 
-#############################
-## Shift Register Decoding ##
-#############################
+#########################################
+## Shift Register Chip Select Decoding ##
+#########################################
 
+#########################################
+## Read in ABUS Register Mapping ##
+#########################################
 
+our %ABUSRegisterHash;
+my $ABUSRegLine;
+# Open ABUS Register File
+open my $ABUSRegFileHANDLE, $ABUSRegMap or die "Could not open $ABUSRegMap: $!";
+my $ABUSRegHeader = <$ABUSRegFileHANDLE>; # This line is header line
+my @ParsedABUSHeader = split('\t', $ABUSRegHeader );
+
+close $ABUSRegFileHANDLE;
+
+	
 
 1;
 

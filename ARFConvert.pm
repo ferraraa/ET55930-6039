@@ -1,7 +1,7 @@
 package ARFConvert;
 
 use Data::Dumper;
-use Bit::Vector;
+
 
 sub ToBinary {
     ## Input 1: Decimal or Hexadecimal Number of any size.
