@@ -11,15 +11,10 @@ use ARFPiGenericSerial;
 use ABUS;
 use ARFConvert;
 
-my $BinaryString = "0000000000000001";
-print Dumper($BinaryString);
-my $ConvertedNum = new_Bin( 16, 0000000000000001 );
-print Dumper($ConvertedNum);
-$ConvertedNum->to_Dec();
-print Dumper($ConvertedNum);
 
-#my @PiSPI0 = ARFPiGenericSerial::BitBangSPI_Setup ( $SCLK_ABUS, $MOSI_ABUS, $MISO_ABUS );
-#ARFPiGPIO::InitializeGPIO( $CS_ABUS, "out", 1);
-#my $ABUSData = ABUS::BitBangABUSRead ( @PiSPI0, $CS_ABUS );
-#ARFPiGenericSerial::BitBangSPI_CleanUp ( @PiSPI0 );
-#ARFPiGPIO::UninitializeGPIO( $CS_ABUS );
+
+my @PiSPI0 = ARFPiGenericSerial::BitBangSPI_Setup ( $SCLK_ABUS, $MOSI_ABUS, $MISO_ABUS );
+ARFPiGPIO::InitializeGPIO( $CS_ABUS, "out", 1);
+my $ABUSData = ABUS::BitBangABUSRead ( @PiSPI0, $CS_ABUS );
+ARFPiGenericSerial::BitBangSPI_CleanUp ( @PiSPI0 );
+ARFPiGPIO::UninitializeGPIO( $CS_ABUS );
