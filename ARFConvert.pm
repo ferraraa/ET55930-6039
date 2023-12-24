@@ -46,6 +46,7 @@ sub BinaryToDecimal{
 	my $BinaryString = shift;
 	
 	my $ConvertedNum = Bit::Vector->new_Bin( 16, $BinaryString );
+	print Dumper($ConvertNum);
 	$ConvertedNum->to_Dec();
 	print Dumper($ConvertNum);
 }
