@@ -18,3 +18,5 @@ ARFPiGPIO::InitializeGPIO( $CS_ABUS, "out", 1);
 my $ABUSData = ABUS::BitBangABUSRead ( @PiSPI0, $CS_ABUS );
 ARFPiGenericSerial::BitBangSPI_CleanUp ( @PiSPI0 );
 ARFPiGPIO::UninitializeGPIO( $CS_ABUS );
+
+print Dumper($ABUSData);
