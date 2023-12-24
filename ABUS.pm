@@ -47,7 +47,7 @@ sub BitBangABUSRead {
 	
 		for ($count = 0; $count < 16; $count++) {
 			system ("echo 0 >/sys/class/gpio/gpio" . $SPIBus[ 0 ] . "/value");
-			$ABUSDataBits[ $count ] = system("cat /sys/class/gpio/gpio" . $SPIBus[ 2 ] . "/value");
+			$ABUSDataBits[ $count ] = system("cat /sys/class/gpio/gpio" . $SPIBus[ 2 ] . "/value >> /dev/null");
 			system ("echo 1 >/sys/class/gpio/gpio" . $SPIBus[ 0 ] . "/value");
 		}
 		# Done Reading, Set CS and SCLK High
