@@ -29,7 +29,7 @@ sub BitBangSPI_CleanUp {
     ## Input 1: SPI Bus Array in the form of [SCLK, MOSI, MISO]
     ## Output: None
     ## This routine cleans up a SPI Bus using Sysfs GPIO methods.
-    my @SPIBus = shift;
+    my @SPIBus = (shift,shift,shift);
 	print Dumper($SPIBus[0]);
 	
 	print Dumper($SPIBus[1]);
