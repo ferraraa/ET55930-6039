@@ -1,5 +1,6 @@
 package ET55930_6039_Environment;
 require Exporter;
+use Data::Dumper;
 our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
 @ISA = qw(Exporter);
 our (@EXPORT) = qw (
@@ -39,15 +40,18 @@ our (@EXPORT) = qw (
 	@ShiftReg_TopGrp1 
 	@ShiftReg_PulseModDelay
 	@ShiftReg_MechStepAtten
-
+	@ABUSRegisterHashArray
 );
 
-our $ProjectDir = "/projects/ET55930-6039/";
+our $ProjectDir = "/home/ferraraa/projects/ET55930-6039/";
 
-our $ABUSDir = $ProjectDir . "ABUS/":
+our $ABUSDir = $ProjectDir . "ABUS/";
 our $ABUSRegMap = $ABUSDir . "RegisterMap_ABUS.txt";
 
-our $RegisterDir = $ProjectDir . "ControlRegisters/";
+our $PathIDDir = $ProjectDir . "ControlRegisters/PathID/";
+our $PathIDMap = $PathIDDir . "PathID.txt";
+
+
 
 
 ##############################################
@@ -117,20 +121,191 @@ our @ShiftReg_MechStepAtten =   [ 1 , 1 , 1 , 0 ];
 ## Shift Register Chip Select Decoding ##
 #########################################
 
-#########################################
+###################################
 ## Read in ABUS Register Mapping ##
-#########################################
+###################################
 
-our %ABUSRegisterHash;
+local $/ = "\r\n"; #Fucking Windoze Newline is Stupid
+my %ABUSRegisterHash;
+our @ABUSRegisterHashArray;
 my $ABUSRegLine;
 # Open ABUS Register File
 open my $ABUSRegFileHANDLE, $ABUSRegMap or die "Could not open $ABUSRegMap: $!";
-my $ABUSRegHeader = <$ABUSRegFileHANDLE>; # This line is header line
-my @ParsedABUSHeader = split('\t', $ABUSRegHeader );
-print Dumper(@ParsedABUSHeader);
+$ABUSRegLine = <$ABUSRegFileHANDLE>; # This line is header line
+chomp($ABUSRegLine);
+my @ParsedABUSHeader = split('\t', $ABUSRegLine );
+shift(@ParsedABUSHeader);
+shift(@ParsedABUSHeader);
+shift(@ParsedABUSHeader);
+
+$ABUSRegLine = <$ABUSRegFileHANDLE>;
+chomp($ABUSRegLine);
+my @ParsedABUSRegisterNames = split('\t', $ABUSRegLine );
+shift(@ParsedABUSRegisterNames);
+shift(@ParsedABUSRegisterNames);
+shift(@ParsedABUSRegisterNames);
+
+$ABUSRegLine = <$ABUSRegFileHANDLE>;
+chomp($ABUSRegLine);
+my @ParsedABUSRegisterBits = split('\t', $ABUSRegLine );
+shift(@ParsedABUSRegisterBits);
+shift(@ParsedABUSRegisterBits);
+shift(@ParsedABUSRegisterBits);
+
+# 32 bit array of Xs
+my @BotGr3Bits = (X) x 32;
+my @ET1Bits = (X) x 32;
+my @ET2Bits = (X) x 32;
+my @MechStepAttenBits = (X) x 32;
+my @RFPathDCPower_ABUSBits = (X) x 32;
+my @SrcOutBits = (X) x 32;
+my @TopGr1Bits = (X) x 32;
+my @TopGr2Bits = (X) x 32;
+my @YIGDivBits = (X) x 32;
+
+while ($ABUSRegLine = <$ABUSRegFileHANDLE>) {
+	chomp($ABUSRegLine);
+	@ParsedABUSRegLine = split('\t', $ABUSRegLine );
+	
+	# Create an ABUS Node Hash, prepopulate the registers with Don't Cares 'Xs'
+	my %ABUSRegisterHash = (	# Need to be my %blah to recreate the Hash. Only way to make an array of hashes in a loop.... IDK.
+		Name 				=> shift(@ParsedABUSRegLine),
+		RScale 				=> shift(@ParsedABUSRegLine),
+		ADCRange 			=> shift(@ParsedABUSRegLine),
+		BotGr3 				=> \@BotGr3Bits,
+		ET1 				=> \@ET1Bits,
+		ET2 				=> \@ET2Bits,
+		MechStepAtten		=> \@MechStepAttenBits,
+		RFPathDCPower_ABUS	=> \@RFPathDCPower_ABUSBits,
+		SrcOut				=> \@SrcOutBits,
+		TopGr1				=> \@TopGr1Bits,
+		TopGr2				=> \@TopGr2Bits,
+		YIGDiv 				=> \@YIGDivBits
+	);
+	
+	# Correct the Registers in the ABUS Hash, Write over the Don't Cares
+	for (my $count = 0; $count < scalar( @ParsedABUSRegisterNames ); $count++) {
+		$ABUSRegisterHash{$ParsedABUSRegisterNames[ $count ]}[$ParsedABUSRegisterBits[$count]] = @ParsedABUSRegLine[$count]; 
+	}
+	
+	# Make Array of Hashes
+	push (@ABUSRegisterHashArray, \%ABUSRegisterHash);
+	#print Dumper($ABUSRegisterHashArray[0]{Name});
+}
+
 close $ABUSRegFileHANDLE;
 
+local $/ = "\n"; #Return to the Linux Newline
 	
+###################################
+## Read in ABUS Register Mapping ##
+###################################
 
+
+
+
+
+###################################
+## Read in PathID Register Mapping ##
+###################################
+
+local $/ = "\r\n"; #Fucking Windoze Newline is Stupid
+my %PathIDRegisterHash;
+our @PathIDRegisterHashArray;
+my $PathIDRegLine;
+# Open PathID Register File
+open my $PathIDRegFileHANDLE, $PathIDRegMap or die "Could not open $PathIDRegMap: $!";
+$PathIDRegLine = <$PathIDRegFileHANDLE>; # This line is header line
+chomp($PathIDRegLine);
+my @ParsedPathIDHeader = split('\t', $PathIDRegLine );
+shift(@ParsedPathIDHeader);
+shift(@ParsedPathIDHeader);
+shift(@ParsedPathIDHeader);
+
+$PathIDRegLine = <$PathIDRegFileHANDLE>;
+chomp($PathIDRegLine);
+my @ParsedPathIDRegisterNames = split('\t', $PathIDRegLine );
+shift(@ParsedPathIDRegisterNames);
+shift(@ParsedPathIDRegisterNames);
+shift(@ParsedPathIDRegisterNames);
+
+$PathIDRegLine = <$PathIDRegFileHANDLE>;
+chomp($PathIDRegLine);
+my @ParsedPathIDRegisterBits = split('\t', $PathIDRegLine );
+shift(@ParsedPathIDRegisterBits);
+shift(@ParsedPathIDRegisterBits);
+shift(@ParsedPathIDRegisterBits);
+
+my @BotGr3Bits = (X) x 32;
+my @ET1Bits = (X) x 32;
+my @ET2Bits = (X) x 32;
+my @MechStepAttenBits = (X) x 32;
+my @RFPathDCPower_PathIDBits = (X) x 32;
+my @SrcOutBits = (X) x 32;
+my @TopGr1Bits = (X) x 32;
+my @TopGr2Bits = (X) x 32;
+my @YIGDivBits = (X) x 32;
+
+my @BotGr3BitName;
+my @ET1BitName;
+my @ET2BitName;
+my @MechStepAttenBitName;
+my @RFPathDCPowerBitName;
+my @SrcOutBitName;
+my @TopGr1BitName;
+my @TopGr2BitName;
+my @YIGDivBitName;
+
+while ($PathIDRegLine = <$PathIDRegFileHANDLE>) {
+	chomp($PathIDRegLine);
+	@ParsedPathIDRegLine = split('\t', $PathIDRegLine );
+	
+	# Create an PathID Node Hash, prepopulate the registers with Don't Cares 'Xs'
+	my %PathIDRegisterHash = (	# Need to be my %blah to recreate the Hash. Only way to make an array of hashes in a loop.... IDK.
+		PathID 					=> shift(@ParsedPathIDRegLine),
+		OutputFreqStart 		=> shift(@ParsedPathIDRegLine),
+		OutputFreqStop 			=> shift(@ParsedPathIDRegLine),
+		SynthFreqStart			=> shift(@ParsedPathIDRegLine),
+		SynthFreqStop			=> shift(@ParsedPathIDRegLine),
+		DivideRatio_2totheN		=> shift(@ParsedPathIDRegLine),
+		Mode					=> shift(@ParsedPathIDRegLine),
+		BitName					=> @ParsedPathIDRegLine, # This is going to have ALL of the names of ALL of the bits
+		ET1BitName				=> @ET1BitName,
+		ET1 					=> \@ET1Bits,
+		ET2BitName				=> @ET2BitName,
+		ET2 					=> \@ET2Bits,
+		MechStepAttenBitName	=> @MechStepAttenBitName,
+		MechStepAtten			=> \@MechStepAttenBits,
+		SrcOutBitName			=> @SrcOutBitName,
+		SrcOut					=> \@SrcOutBits,
+		YIGDivBitName			=> @YIGDivBitName,
+		YIGDiv 					=> \@YIGDivBits,
+		BotGr3BitName			=> @BotGr3BitName,
+		BotGr3 					=> \@BotGr3Bits,
+		TopGr1BitName			=> @TopGr1BitName,
+		TopGr1					=> \@TopGr1Bits,
+		TopGr1BitName			=> @TopGr1BitName,
+		TopGr2					=> \@TopGr2Bits,
+		RFPathDCPowerBitName	=> @RFPathDCPowerBitName,
+		RFPathDCPower_PathID	=> \@RFPathDCPower_PathIDBits
+	);
+	
+	# Correct the Registers in the PathID Hash, Write over the Don't Cares
+	for (my $count = 0; $count < scalar( @ParsedPathIDRegisterNames ); $count++) {
+		$PathIDRegisterHash{$ParsedPathIDRegisterNames[ $count ]}[$ParsedPathIDRegisterBits[$count]] = @ParsedPathIDRegLine[$count]; 
+	}
+	
+	# Make Array of Hashes
+	push (@PathIDRegisterHashArray, \%PathIDRegisterHash);
+	#print Dumper($PathIDRegisterHashArray[0]{Name});
+}
+
+close $PathIDRegFileHANDLE;
+
+local $/ = "\n"; #Return to the Linux Newline
+	
+###################################
+## Read in PathID Register Mapping ##
+###################################
 1;
 
