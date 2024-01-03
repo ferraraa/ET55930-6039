@@ -1,5 +1,4 @@
 #/usr/bin/perl
-use lib "../../perl5/";
 use lib "./";
 use strict;
 use warnings;
@@ -17,6 +16,16 @@ use ARFConvert;
 #my @ABUSData = ABUS::BitBangABUSADCRead ( \@PiSPI0, $CS_ABUS );
 #ARFPiGenericSerial::BitBangSPI_CleanUp ( @PiSPI0 );
 #ARFPiGPIO::UninitializeGPIO( $CS_ABUS );
-my $test = "SrcOut";
-print Dumper( $ABUSRegisterHashArray[40]{$test});
-print Dumper( $ABUSRegisterHashArray[40]{$test}[0]);
+my $test = "ET1";
+#print Dumper( $ABUSRegisterHashArray[40]{$test});
+#print Dumper( $ABUSRegisterHashArray[40]{$test}[0]);
+
+#print Dumper( $ABUSRegisterHashArray[40]{SrcOut});
+print Dumper( $PathIDRegisterHashArray[0]{PathID});
+print Dumper( $PathIDRegisterHashArray[0]{ET1}[24]);
+print Dumper( $PathIDRegisterHashArray[0]{ET1BitName}[24]);
+
+print Dumper( $PathIDRegisterHashArray[20]{PathID});
+print Dumper( $PathIDRegisterHashArray[0]{YIGDiv}[24]);
+print Dumper( $PathIDRegisterHashArray[0]{YIGDivBitName}[24]);
+#print Dumper( $PathIDRegisterHashArray[0]{$test}[0]);

@@ -1,0 +1,3 @@
+MechStepAtten_AttenCardA	MechStepAtten_AttenCardB	MechStepAtten_AttenCardC	MechStepAtten_AttenCardD	MechStepAtten_AttenCardE	SrcOutDivider_ClockSlip	SrcOutDivider_SubHarmReset	ALC_DET_GAIN4	ALC_DET_GAIN3	ALC_DET_GAIN2	ALC_DET_GAIN1	OutputCard_IO1	OutputCard_IO2	OutputCard_IO3	OutputCard_IO4	OutputCard_IO5	OutputCard_IO6
+MechStepAtten	MechStepAtten	MechStepAtten	MechStepAtten	MechStepAtten	ET2	ET2	TopGr1	TopGr1	TopGr1	TopGr1	TopGr1	TopGr1	TopGr1	TopGr1	TopGr1	TopGr1
+31	30	29	28	27	3	2	25	23	22	21	15	14	13	12	11	10

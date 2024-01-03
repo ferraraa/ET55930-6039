@@ -72,32 +72,32 @@ sub BitBangDACOutput {
     my $ChipSelect;
     my $DACRegisterMSBs;
     my $DACRegisterLSBs;
-    if ($DAC == "A0") {
+    if ($DAC eq "A0") {
         $ChipSelect = $CS_ModDACA;
         $DACRegisterMSBs = 0x2A;
         $DACRegisterLSBs = 0x29;
         $LDAC = $LDAC_ModDACA;
-    } elsif ($DAC == "A1") {
+    } elsif ($DAC eq "A1") {
         $ChipSelect = $CS_ModDACA;
         $DACRegisterMSBs = 0x2C;
         $DACRegisterLSBs = 0x2B;
         $LDAC = $LDAC_ModDACA;
-    } elsif ($DAC == "B0") {
+    } elsif ($DAC eq "B0") {
         $ChipSelect = $CS_ModDACB;
         $DACRegisterMSBs = 0x2A;
         $DACRegisterLSBs = 0x29;
         $LDAC = $LDAC_ModDACCB;
-    } elsif ($DAC == "B1") {
+    } elsif ($DAC eq "B1") {
         $ChipSelect = $CS_ModDACB;
         $DACRegisterMSBs = 0x2C;
         $DACRegisterLSBs = 0x2B;
         $LDAC = $LDAC_ModDACB;
-    } elsif ($DAC == "C0") {
+    } elsif ($DAC eq "C0") {
         $ChipSelect = $CS_ModDACC;
         $DACRegisterMSBs = 0x2A;
         $DACRegisterLSBs = 0x29;
         $LDAC = $LDAC_ModDACC;
-    } elsif ($DAC == "C1") {
+    } elsif ($DAC eq "C1") {
         $ChipSelect = $CS_ModDACC;
         $DACRegisterMSBs = 0x2C;
         $DACRegisterLSBs = 0x2B;
@@ -131,7 +131,7 @@ sub BitBangDACOutput {
     my $CPUType = 1;
     
     ################# ONLY TO BE RUN ON RASPBERRY PI #################
-    if ($CPUType == "tbd") {
+    if ($CPUType eq "tbd") {
         # Make Sure LDAC Pin is Low
 
         ARFPiGenericSerial::BitBangSPIWrite( @SPIBus_ModDACs , $MSBsToBeWritten , $ChipSelect );
