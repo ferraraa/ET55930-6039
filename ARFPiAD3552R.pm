@@ -1,9 +1,10 @@
 package ARFPiAD3552R;
+
 # This module should help make it simpler to communicate with the AD3552R DAC
-# This is meant to be a part of the ET55930-6039 System, meaning the phsyical 
+# This is meant to be a part of the ET55930-6039 System, meaning the phsyical
 # pins on the RaspberryPi SPI Bus will be hardcoded in this module.
 
-# ET55930-6039 uses the SPI-1 Bus. 
+# ET55930-6039 uses the SPI-1 Bus.
 # 40 Pin Connector Pin 40: SPI1 SCLK
 # 40 Pin Connector Pin 38: SPI1 MOSI
 # 40 Pin Connector Pin 35: SPI1 MISO
@@ -19,6 +20,7 @@ package ARFPiAD3552R;
 # 18: GPIO 24, LDAC for DAC C on ET55930-6039
 
 use Data::Dumper;
+
 #use System::Info;
 use ARFPiGPIO;
 use ARFPiGenericSerial;
@@ -28,34 +30,30 @@ sub BitBangModDACsSetup {
     ## Input: None
     ## Output: None
     ## This routine sets up the Mod DAC SPI Bus
-    our @SPIBus_ModDACs = ARFPiGenericSerial::BitBangSPI_Setup ( 
-        $SCLK_ModDACs,
-        $MOSI_ModDACs,
-        $MISO_ModDACs
-    );
+    our @SPIBus_ModDACs = ARFPiGenericSerial::BitBangSPI_Setup( $SCLK_ModDACs, $MOSI_ModDACs, $MISO_ModDACs );
 
-    ARFPiGPIO::InitializeGPIO( $CS_ModDACA, "out", 1);
-    ARFPiGPIO::InitializeGPIO( $CS_ModDACB, "out", 1);
-    ARFPiGPIO::InitializeGPIO( $CS_ModDACC, "out", 1);
+    ARFPiGPIO::InitializeGPIO( $CS_ModDACA, "out", 1 );
+    ARFPiGPIO::InitializeGPIO( $CS_ModDACB, "out", 1 );
+    ARFPiGPIO::InitializeGPIO( $CS_ModDACC, "out", 1 );
 
-    ARFPiGPIO::InitializeGPIO( $LDAC_ModDACA, "out", 1);
-    ARFPiGPIO::InitializeGPIO( $LDAC_ModDACB, "out", 1);
-    ARFPiGPIO::InitializeGPIO( $LDAC_ModDACC, "out", 1);
+    ARFPiGPIO::InitializeGPIO( $LDAC_ModDACA, "out", 1 );
+    ARFPiGPIO::InitializeGPIO( $LDAC_ModDACB, "out", 1 );
+    ARFPiGPIO::InitializeGPIO( $LDAC_ModDACC, "out", 1 );
 }
 
 sub BitBangModDACsCleanUp {
     ## Input: None
     ## Output: None
     ## This routine cleans up the Mod DAC SPI Bus
-    ARFPiGenericSerial::BitBangSPI_CleanUp ( @SPIBus_ModDACs );
+    ARFPiGenericSerial::BitBangSPI_CleanUp(@SPIBus_ModDACs);
 
-    ARFPiGPIO::UninitializeGPIO( $CS_ModDACA );
-    ARFPiGPIO::UninitializeGPIO( $CS_ModDACB );
-    ARFPiGPIO::UninitializeGPIO( $CS_ModDACC );
+    ARFPiGPIO::UninitializeGPIO($CS_ModDACA);
+    ARFPiGPIO::UninitializeGPIO($CS_ModDACB);
+    ARFPiGPIO::UninitializeGPIO($CS_ModDACC);
 
-    ARFPiGPIO::UninitializeGPIO( $LDAC_ModDACA );
-    ARFPiGPIO::UninitializeGPIO( $LDAC_ModDACB );
-    ARFPiGPIO::UninitializeGPIO( $LDAC_ModDACC );
+    ARFPiGPIO::UninitializeGPIO($LDAC_ModDACA);
+    ARFPiGPIO::UninitializeGPIO($LDAC_ModDACB);
+    ARFPiGPIO::UninitializeGPIO($LDAC_ModDACC);
 }
 
 sub BitBangDACOutput {
@@ -65,61 +63,67 @@ sub BitBangDACOutput {
     ## Output: None, unless you asked for a readback
     ## This routine writes AND LOADS a DAC output
 
-    my $DAC = shift;
-    my $DACCode = shift;
+    my $DAC      = shift;
+    my $DACCode  = shift;
     my $Readback = shift;
-    
+
     my $ChipSelect;
     my $DACRegisterMSBs;
     my $DACRegisterLSBs;
-    if ($DAC eq "A0") {
-        $ChipSelect = $CS_ModDACA;
+    if ( $DAC eq "A0" ) {
+        $ChipSelect      = $CS_ModDACA;
         $DACRegisterMSBs = 0x2A;
         $DACRegisterLSBs = 0x29;
-        $LDAC = $LDAC_ModDACA;
-    } elsif ($DAC eq "A1") {
-        $ChipSelect = $CS_ModDACA;
+        $LDAC            = $LDAC_ModDACA;
+    }
+    elsif ( $DAC eq "A1" ) {
+        $ChipSelect      = $CS_ModDACA;
         $DACRegisterMSBs = 0x2C;
         $DACRegisterLSBs = 0x2B;
-        $LDAC = $LDAC_ModDACA;
-    } elsif ($DAC eq "B0") {
-        $ChipSelect = $CS_ModDACB;
+        $LDAC            = $LDAC_ModDACA;
+    }
+    elsif ( $DAC eq "B0" ) {
+        $ChipSelect      = $CS_ModDACB;
         $DACRegisterMSBs = 0x2A;
         $DACRegisterLSBs = 0x29;
-        $LDAC = $LDAC_ModDACCB;
-    } elsif ($DAC eq "B1") {
-        $ChipSelect = $CS_ModDACB;
+        $LDAC            = $LDAC_ModDACCB;
+    }
+    elsif ( $DAC eq "B1" ) {
+        $ChipSelect      = $CS_ModDACB;
         $DACRegisterMSBs = 0x2C;
         $DACRegisterLSBs = 0x2B;
-        $LDAC = $LDAC_ModDACB;
-    } elsif ($DAC eq "C0") {
-        $ChipSelect = $CS_ModDACC;
+        $LDAC            = $LDAC_ModDACB;
+    }
+    elsif ( $DAC eq "C0" ) {
+        $ChipSelect      = $CS_ModDACC;
         $DACRegisterMSBs = 0x2A;
         $DACRegisterLSBs = 0x29;
-        $LDAC = $LDAC_ModDACC;
-    } elsif ($DAC eq "C1") {
-        $ChipSelect = $CS_ModDACC;
+        $LDAC            = $LDAC_ModDACC;
+    }
+    elsif ( $DAC eq "C1" ) {
+        $ChipSelect      = $CS_ModDACC;
         $DACRegisterMSBs = 0x2C;
         $DACRegisterLSBs = 0x2B;
-        $LDAC = $LDAC_ModDACC;
-    } else {
-        $ChipSelect = $CS_ModDACC;
+        $LDAC            = $LDAC_ModDACC;
+    }
+    else {
+        $ChipSelect      = $CS_ModDACC;
         $DACRegisterMSBs = 0x2C;
         $DACRegisterLSBs = 0x2B;
-        $LDAC = $LDAC_ModDACC;
+        $LDAC            = $LDAC_ModDACC;
     }
 
     # Convert the DAC Code to Binary
-    my @DACCodeBinaryArray = ARFConvert::ToBinaryLeadingZeroes( $DACCode , 16 ); #DAC Code is 16 bits
-    my $DACCodeBinaryString = join("", @DACCodeBinaryArray);
-    my $DACCodeMSBs = substr( $DACCodeBinaryString , 8 , 8 );
-    my $DACCodeLSBs = substr( $DACCodeBinaryString , 0 , 8 );
+    my @DACCodeBinaryArray  = ARFConvert::ToBinaryLeadingZeroes( $DACCode, 16 );    #DAC Code is 16 bits
+    my $DACCodeBinaryString = join( "", @DACCodeBinaryArray );
+    my $DACCodeMSBs         = substr( $DACCodeBinaryString, 8, 8 );
+    my $DACCodeLSBs         = substr( $DACCodeBinaryString, 0, 8 );
 
     # Convert DAC Register to Binary
-    my @DACRegisterMSBsBinaryArray = ARFConvert::ToBinaryLeadingZeroes( $DACRegisterMSBs , 8 ); #DAC Registers are 8 bits
-    my $DACRegisterMSBsBinaryString = join("", @DACRegisterMSBsBinaryArray);
-    my @DACRegisterLSBsBinaryArray = ARFConvert::ToBinaryLeadingZeroes( $DACRegisterLSBs , 8 ); #DAC Registers are 8 bits
-    my $DACRegisterLSBsBinaryString = join("", @DACRegisterLSBsBinaryArray);
+    my @DACRegisterMSBsBinaryArray = ARFConvert::ToBinaryLeadingZeroes( $DACRegisterMSBs, 8 ); #DAC Registers are 8 bits
+    my $DACRegisterMSBsBinaryString = join( "", @DACRegisterMSBsBinaryArray );
+    my @DACRegisterLSBsBinaryArray = ARFConvert::ToBinaryLeadingZeroes( $DACRegisterLSBs, 8 ); #DAC Registers are 8 bits
+    my $DACRegisterLSBsBinaryString = join( "", @DACRegisterLSBsBinaryArray );
 
     # Concatenate the Arrays of Bits: (Register , Data)
     my $MSBsToBeWritten = $DACRegisterMSBsBinaryString . $DACCodeMSBs;
@@ -129,19 +133,20 @@ sub BitBangDACOutput {
     #my $System = System::Info -> new;
     #my $CPUType = $System -> cpu_type;
     my $CPUType = 1;
-    
+
     ################# ONLY TO BE RUN ON RASPBERRY PI #################
-    if ($CPUType eq "tbd") {
+    if ( $CPUType eq "tbd" ) {
+
         # Make Sure LDAC Pin is Low
 
-        ARFPiGenericSerial::BitBangSPIWrite( @SPIBus_ModDACs , $MSBsToBeWritten , $ChipSelect );
-        ARFPiGenericSerial::BitBangSPIWrite( @SPIBus_ModDACs , $LSBsToBeWritten , $ChipSelect );
+        ARFPiGenericSerial::BitBangSPIWrite( @SPIBus_ModDACs, $MSBsToBeWritten, $ChipSelect );
+        ARFPiGenericSerial::BitBangSPIWrite( @SPIBus_ModDACs, $LSBsToBeWritten, $ChipSelect );
 
-        if ($Readback == 1) {
+        if ( $Readback == 1 ) {
+
             #Not reading back right now
         }
     }
-
 
 }
 

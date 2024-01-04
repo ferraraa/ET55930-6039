@@ -104,15 +104,8 @@ our $PulseDelayEn = 23;           # 40 Pin Connector 16
 
 # There 10 banks of shift registers on ET55930-6039. 4 GPIO Pins
 # have been assigned to encoding the 10 (16 possible) banks.
-our @ShiftRegNameArray = ("BotGr3",
-	"ET1",
-	"ET2",
-	"MechStepAtten",
-	"RFPathDCPower_ABUS",
-	"SrcOut",
-	"TopGr1",
-	"TopGr2",
-	"YIGDiv");
+our @ShiftRegNameArray =
+  ( "BotGr3", "ET1", "ET2", "MechStepAtten", "RFPathDCPower_ABUS", "SrcOut", "TopGr1", "TopGr2", "YIGDiv" );
 our @ShiftReg_ET1           = [ 0, 0, 0, 1 ];
 our @ShiftReg_ET2           = [ 0, 0, 1, 0 ];
 our @ShiftReg_SrcOut        = [ 0, 0, 1, 1 ];
@@ -164,7 +157,8 @@ while ( $ABUSRegLine = <$ABUSRegFileHANDLE> ) {
     @ParsedABUSRegLine = split( '\t', $ABUSRegLine );
 
     # Create an ABUS Node Hash, prepopulate the registers with Don't Cares 'Xs'
-    my %ABUSRegisterHash = (    # Need to be my %blah to recreate the Hash. Only way to make an array of hashes in a loop.... IDK.
+    my %ABUSRegisterHash =
+      (    # Need to be my %blah to recreate the Hash. Only way to make an array of hashes in a loop.... IDK.
         Name               => shift(@ParsedABUSRegLine),
         RScale             => shift(@ParsedABUSRegLine),
         ADCRange           => shift(@ParsedABUSRegLine),
@@ -177,11 +171,12 @@ while ( $ABUSRegLine = <$ABUSRegFileHANDLE> ) {
         TopGr1             => [ (X) x 32 ],
         TopGr2             => [ (X) x 32 ],
         YIGDiv             => [ (X) x 32 ]
-    );
+      );
 
     # Correct the Registers in the ABUS Hash, Write over the Don't Cares
     for ( my $count = 0 ; $count < scalar(@ParsedABUSRegisterNames) ; $count++ ) {
-        $ABUSRegisterHash{ $ParsedABUSRegisterNames[$count] }[ $ParsedABUSRegisterBits[$count] ] = $ParsedABUSRegLine[$count];
+        $ABUSRegisterHash{ $ParsedABUSRegisterNames[$count] }[ $ParsedABUSRegisterBits[$count] ] =
+          $ParsedABUSRegLine[$count];
     }
 
     # Make Array of Hashes
@@ -283,7 +278,8 @@ while ( $PathIDRegLine = <$PathIDRegFileHANDLE> ) {
     @ParsedPathIDRegLine = split( '\t', $PathIDRegLine );
 
     # Create an PathID Hash, prepopulate the registers with Don't Cares 'Xs'
-    my %PathIDRegisterHash = (    # Need to be my %blah to recreate the Hash. Only way to make an array of hashes in a loop.... IDK.
+    my %PathIDRegisterHash =
+      (    # Need to be my %blah to recreate the Hash. Only way to make an array of hashes in a loop.... IDK.
         PathID               => shift(@ParsedPathIDRegLine),
         OutputFreqStart      => shift(@ParsedPathIDRegLine),
         OutputFreqStop       => shift(@ParsedPathIDRegLine),
@@ -309,7 +305,7 @@ while ( $PathIDRegLine = <$PathIDRegFileHANDLE> ) {
         TopGr2               => [ (X) x 32 ],
         YIGDivBitName        => \@YIGDivBitNames,
         YIGDiv               => [ (X) x 32 ]
-    );
+      );
 
     # Correct the Registers in the PathID Hash, Write over the Don't Cares
     for ( my $count = 0 ; $count < scalar(@ParsedPathIDRegLine) ; $count++ ) {
@@ -325,10 +321,12 @@ while ( $PathIDRegLine = <$PathIDRegFileHANDLE> ) {
             $PathIDRegisterHash{ET2}[ $ParsedPathIDRegisterBitNumbers[$count] ] = $ParsedPathIDRegLine[$count];
         }
         elsif ( $ParsedPathIDRegisterNames[$count] eq "MechStepAtten" ) {
-            $PathIDRegisterHash{MechStepAtten}[ $ParsedPathIDRegisterBitNumbers[$count] ] = $ParsedPathIDRegLine[$count];
+            $PathIDRegisterHash{MechStepAtten}[ $ParsedPathIDRegisterBitNumbers[$count] ] =
+              $ParsedPathIDRegLine[$count];
         }
         elsif ( $ParsedPathIDRegisterNames[$count] eq "RFPathDCPower_ABUS" ) {
-            $PathIDRegisterHash{RFPathDCPower_ABUS}[ $ParsedPathIDRegisterBitNumbers[$count] ] = $ParsedPathIDRegLine[$count];
+            $PathIDRegisterHash{RFPathDCPower_ABUS}[ $ParsedPathIDRegisterBitNumbers[$count] ] =
+              $ParsedPathIDRegLine[$count];
         }
         elsif ( $ParsedPathIDRegisterNames[$count] eq "SrcOut" ) {
 

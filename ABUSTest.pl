@@ -9,23 +9,23 @@ use ARFPiGenericSerial;
 use ABUS;
 use ARFConvert;
 
-
-
 #my @PiSPI0 = ARFPiGenericSerial::BitBangSPI_Setup ( $SCLK_ABUS, $MOSI_ABUS, $MISO_ABUS );
 #ARFPiGPIO::InitializeGPIO( $CS_ABUS, "out", 1);
 #my @ABUSData = ABUS::BitBangABUSADCRead ( \@PiSPI0, $CS_ABUS );
 #ARFPiGenericSerial::BitBangSPI_CleanUp ( @PiSPI0 );
 #ARFPiGPIO::UninitializeGPIO( $CS_ABUS );
 my $test = "ET1";
+
 #print Dumper( $ABUSRegisterHashArray[40]{$test});
 #print Dumper( $ABUSRegisterHashArray[40]{$test}[0]);
 
 #print Dumper( $ABUSRegisterHashArray[40]{SrcOut});
-print Dumper( $PathIDRegisterHashArray[0]{PathID});
-print Dumper( $PathIDRegisterHashArray[0]{ET1}[24]);
-print Dumper( $PathIDRegisterHashArray[0]{ET1BitName}[24]);
+print Dumper( $PathIDRegisterHashArray[0]{PathID} );
+print Dumper( $PathIDRegisterHashArray[0]{ET1}[24] );
+print Dumper( $PathIDRegisterHashArray[0]{ET1BitName}[24] );
 
-print Dumper( $PathIDRegisterHashArray[20]{PathID});
-print Dumper( $PathIDRegisterHashArray[0]{YIGDiv}[24]);
-print Dumper( $PathIDRegisterHashArray[0]{YIGDivBitName}[24]);
+print Dumper( $PathIDRegisterHashArray[20]{PathID} );
+print Dumper( $PathIDRegisterHashArray[0]{YIGDiv}[24] );
+print Dumper( $PathIDRegisterHashArray[0]{YIGDivBitName}[24] );
+
 #print Dumper( $PathIDRegisterHashArray[0]{$test}[0]);

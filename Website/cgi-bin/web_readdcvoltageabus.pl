@@ -1,5 +1,6 @@
 #!/usr/bin/perl -w
 use strict;
+
 #use lib '/projects/WebsiteModules';
 use lib '/projects/ET55930-6039';
 use ET55930_6039_Environment;
@@ -9,7 +10,6 @@ use ABUS;
 use Data::Dumper;
 use CGI;
 use Sys::Hostname;
-
 
 #use CGI::HTML::Functions;
 #use Cwd;
@@ -22,47 +22,50 @@ use Sys::Hostname;
 #use CGI::HTML::Functions;
 
 ## Create CGI Component
-my $cgi = CGI->new;
-my $host = hostname;
-my @currentscriptfilebeingexecuted = split("/", $0);
-my $formpath          = "/cgi-bin/" . $currentscriptfilebeingexecuted[$#currentscriptfilebeingexecuted];
-my $htmldir           = "/var/www/html/";
+my $cgi                            = CGI->new;
+my $host                           = hostname;
+my @currentscriptfilebeingexecuted = split( "/", $0 );
+my $formpath                       = "/cgi-bin/" . $currentscriptfilebeingexecuted[$#currentscriptfilebeingexecuted];
+my $htmldir                        = "/var/www/html/";
 
-my $WebJustStarted        = 0;
+my $WebJustStarted = 0;
 
 #######################################################################################
 ##################### Start the HTML WebPage
 #######################################################################################
 print "Content-type: text/html\n\n";
-print $cgi -> start_html( "ABUS" );
-print $cgi -> a( { href => ( "http://" . $host . "/" ) }, "Return Home" );
+print $cgi->start_html("ABUS");
+print $cgi->a( { href => ( "http://" . $host . "/" ) }, "Return Home" );
 print "<H2>Read One ABUS Node</H2>\n";
 ## Check to see what options have been selected
 
-my @resetoption = $cgi->param( "Reset" );
-my @resetboxch  = $cgi->param( "Check This If You Want to Reset the Form, Good When Funky Stuff Happens" );
+my @resetoption = $cgi->param("Reset");
+my @resetboxch  = $cgi->param("Check This If You Want to Reset the Form, Good When Funky Stuff Happens");
 
 if ( @resetoption && @resetboxch ) {
-	$WebJustStarted = 1;
-	$cgi->delete_all();
+    $WebJustStarted = 1;
+    $cgi->delete_all();
 }
+
 #print Dumper($cgi);
 
 ## Make Reset Button
-print $cgi ->start_form( -method => 'post',
-						 -action => $formpath );
-print $cgi ->div(
-				  $cgi->submit(
-								-name   => "Reset",
-								-id     => "Reset",
-								-values => "Submit"
-				  ),
-				  $cgi->checkbox(
-								  -name    => "Check This If You Want to Reset the Form, Good When Funky Stuff Happens",
-								  -id      => "resetbox",
-								  -value   => "resetboxchecked",
-								  -default => "unchecked"
-				  )
+print $cgi->start_form(
+    -method => 'post',
+    -action => $formpath
+);
+print $cgi->div(
+    $cgi->submit(
+        -name   => "Reset",
+        -id     => "Reset",
+        -values => "Submit"
+    ),
+    $cgi->checkbox(
+        -name    => "Check This If You Want to Reset the Form, Good When Funky Stuff Happens",
+        -id      => "resetbox",
+        -value   => "resetboxchecked",
+        -default => "unchecked"
+    )
 );
 $cgi->end_form;
 
@@ -75,18 +78,17 @@ print "<br><br><br><br>";
 my $CurrentABUSNodeName;
 my @CurrentABUSNodeNameSplit;
 my $ABUSPhysicalReading = 1;
-for (my $count = 0; $count < scalar(@ABUSRegisterHashArray); $count++) {
-	$CurrentABUSNodeName = $ABUSRegisterHashArray[$count]{Name};
-	@CurrentABUSNodeNameSplit = split("_", $CurrentABUSNodeName);
-	if ($CurrentABUSNodeNameSplit[ 0 ] eq "PowerABUSv") {
-		print $ABUSRegisterHashArray[$count]{Name} . "<br>";
-		#print "<br>";
-		$ABUSPhysicalReading = ABUS::BitBangABUSNodeRead($ABUSRegisterHashArray[$count]);
-		$count = 1000;
-	}
-	
-	
-	
+for ( my $count = 0 ; $count < scalar(@ABUSRegisterHashArray) ; $count++ ) {
+    $CurrentABUSNodeName      = $ABUSRegisterHashArray[$count]{Name};
+    @CurrentABUSNodeNameSplit = split( "_", $CurrentABUSNodeName );
+    if ( $CurrentABUSNodeNameSplit[0] eq "PowerABUSv" ) {
+        print $ABUSRegisterHashArray[$count]{Name} . "<br>";
+
+        #print "<br>";
+        $ABUSPhysicalReading = ABUS::BitBangABUSNodeRead( $ABUSRegisterHashArray[$count] );
+        $count               = 1000;
+    }
+
 }
 $cgi->end_form;
 
