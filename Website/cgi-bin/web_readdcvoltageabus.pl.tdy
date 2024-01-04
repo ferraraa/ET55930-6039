@@ -25,9 +25,8 @@ use Sys::Hostname;
 my $cgi                            = CGI->new;
 my $host                           = hostname;
 my @currentscriptfilebeingexecuted = split( "/", $0 );
-my $formpath                       = "/cgi-bin/"
-  . $currentscriptfilebeingexecuted[$#currentscriptfilebeingexecuted];
-my $htmldir = "/var/www/html/";
+my $formpath                       = "/cgi-bin/" . $currentscriptfilebeingexecuted[$#currentscriptfilebeingexecuted];
+my $htmldir                        = "/var/www/html/";
 
 my $WebJustStarted = 0;
 
@@ -41,8 +40,7 @@ print "<H2>Read One ABUS Node</H2>\n";
 ## Check to see what options have been selected
 
 my @resetoption = $cgi->param("Reset");
-my @resetboxch  = $cgi->param(
-    "Check This If You Want to Reset the Form, Good When Funky Stuff Happens");
+my @resetboxch  = $cgi->param("Check This If You Want to Reset the Form, Good When Funky Stuff Happens");
 
 if ( @resetoption && @resetboxch ) {
     $WebJustStarted = 1;
@@ -63,8 +61,7 @@ print $cgi->div(
         -values => "Submit"
     ),
     $cgi->checkbox(
-        -name =>
-"Check This If You Want to Reset the Form, Good When Funky Stuff Happens",
+        -name    => "Check This If You Want to Reset the Form, Good When Funky Stuff Happens",
         -id      => "resetbox",
         -value   => "resetboxchecked",
         -default => "unchecked"
@@ -88,9 +85,8 @@ for ( my $count = 0 ; $count < scalar(@ABUSRegisterHashArray) ; $count++ ) {
         print $ABUSRegisterHashArray[$count]{Name} . "<br>";
 
         #print "<br>";
-        $ABUSPhysicalReading =
-          ABUS::BitBangABUSNodeRead( $ABUSRegisterHashArray[$count] );
-        $count = 1000;
+        $ABUSPhysicalReading = ABUS::BitBangABUSNodeRead( $ABUSRegisterHashArray[$count] );
+        $count               = 1000;
     }
 
 }

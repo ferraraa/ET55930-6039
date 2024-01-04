@@ -74,33 +74,48 @@ sub BitBangABUSNodeRead {
 
     my $ABUSNodeHash = shift;
 
-    #print Dumper($ABUSNodeHash);
-    # Read In ALL Current Shift Register States.
+    ### Read In ALL Current Shift Register States, Mask Current States with Needed States for ABUS Node.
     my @fileHANDLEArray;
-    my $tempLine;
-    my @tempLineArray;
+    my $CurrentRegState;
+    my @CurrentRegStateArray;
     my @CurrentRegStateHashArray;
 
     for ( my $count = 0 ; $count < scalar(@ShiftRegNameArray) ; $count++ ) {
 
+        # Read Current State of Regiser
         open( my $fileHANDLE, "<" . $CurrentRegisterStateDir . $ShiftRegNameArray[$count] . ".txt" );
-        $tempLine = <$fileHANDLE>;
-        chomp($tempLine);
-
-        #print Dumper($tempLine);
-        my @tempLineArray       = split( "\t", $tempLine );
-        my %CurrentRegStateHash = (
-            Name  => shift(@tempLineArray),
-            State => \@tempLineArray
-        );
-
-        # Make Array of Hashes
-        push( @CurrentRegStateHashArray, \%CurrentRegStateHash );
+        $CurrentRegState = <$fileHANDLE>;
         close $fileHANDLE;
-    }
-    print Dumper(@CurrentRegStateHashArray);
 
-    # Change ALL Shift Register States to Mux in the Desired ABUS Node
+        #open ($fileHANDLE, ">" . $CurrentRegisterStateDir . $ShiftRegNameArray[$count] . ".txt");
+        chomp($CurrentRegState);
+        my @CurrentRegStateArray = split( "\t", $CurrentRegState );
+
+        #print Dumper(@NewRegStateArray);
+        for ( my $bitcount = 0 ; $bitcount < scalar(@CurrentRegStateArray) ; $bitcount++ ) {
+
+            #print Dumper ($ABUSNodeHash->{$ShiftRegNameArray[$count]}[$bitcount] eq "X");
+            if ( $ABUSNodeHash->{ $ShiftRegNameArray[$count] }[$bitcount] eq "X" ) {
+                $NewRegStateArray[$bitcount] = $CurrentRegStateArray[$bitcount];
+            }
+            else {
+                $NewRegStateArray[$bitcount] = $ABUSNodeHash->{ $ShiftRegNameArray[$count] }[$bitcount];
+            }
+        }
+        my $NewRegStateLine = join( "\t", @NewRegStateArray );
+        print "<br>";
+        print Dumper( $ShiftRegNameArray[$count] );
+        print "<br>";
+        print Dumper($CurrentRegState);
+        print "<br>";
+        print Dumper( $ABUSNodeHash->{ $ShiftRegNameArray[$count] } );
+        print "<br>";
+        print Dumper($NewRegStateLine);
+
+    }
+    ### Detemine NEW Shift Register State
+
+    ### Change ALL Shift Register States to Mux in the Desired ABUS Node
 
     # Shift Out New Bits to ALL Shift Registers
 
