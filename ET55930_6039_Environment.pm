@@ -7,6 +7,7 @@ our (@EXPORT) = qw (
   $ProjectDir
   $RegisterDir
   $ABUSDir
+  $CurrentRegisterStateDir
   $MOSI_ModDACs
   $MISO_ModDACs
   $SCLK_ModDACs
@@ -30,6 +31,7 @@ our (@EXPORT) = qw (
   $PulseTXp
   $PulseTXn
   $PulseDelayEn
+  @ShiftRegNameArray
   @ShiftReg_ET1
   @ShiftReg_ET2
   @ShiftReg_SrcOut
@@ -51,6 +53,8 @@ our $ABUSRegMap = $ABUSDir . "RegisterMap_ABUS.txt";
 
 our $PathIDDir = $ProjectDir . "ControlRegisters/PathID/";
 our $PathIDMap = $PathIDDir . "PathIDRegisters.txt";
+
+our $CurrentRegisterStateDir = $ProjectDir . "ControlRegisters/CurrentState/";
 
 ##############################################
 ## Raspberry Pi 40 Pin Connector Assignment ##
@@ -100,6 +104,15 @@ our $PulseDelayEn = 23;           # 40 Pin Connector 16
 
 # There 10 banks of shift registers on ET55930-6039. 4 GPIO Pins
 # have been assigned to encoding the 10 (16 possible) banks.
+our @ShiftRegNameArray = ("BotGr3",
+	"ET1",
+	"ET2",
+	"MechStepAtten",
+	"RFPathDCPower_ABUS",
+	"SrcOut",
+	"TopGr1",
+	"TopGr2",
+	"YIGDiv");
 our @ShiftReg_ET1           = [ 0, 0, 0, 1 ];
 our @ShiftReg_ET2           = [ 0, 0, 1, 0 ];
 our @ShiftReg_SrcOut        = [ 0, 0, 1, 1 ];

@@ -1,5 +1,6 @@
 package ABUS;
-
+use ET55930_6039_Environment;
+use Data::Dumper;
 
 sub BitBangABUSADCRead {
     ## Input 1: Initialized SPI Bus Array in the form of [SCLK, MOSI, MISO]
@@ -69,15 +70,36 @@ sub BitBangABUSADCRead {
 
 sub BitBangABUSNodeRead{
 	
-	my $ABUSNode = shift;
-	
+	my $ABUSNodeHash = shift;
+	#print Dumper($ABUSNodeHash);
 	# Read In ALL Current Shift Register States.
+	my @fileHANDLEArray;
+	my $tempLine;
+	my @tempLineArray;
+	my @CurrentRegStateHashArray;
+
+for (my $count = 0; $count < scalar(@ShiftRegNameArray); $count++) {
 	
+	open (my $fileHANDLE, "<" . $CurrentRegisterStateDir . $ShiftRegNameArray[$count] . ".txt");
+	$tempLine = <$fileHANDLE>;
+	chomp ($tempLine);
+	#print Dumper($tempLine);
+	my @tempLineArray = split("\t", $tempLine);
+	my %CurrentRegStateHash = (
+		Name => shift(@tempLineArray),
+		State => \@tempLineArray
+		);
+	
+	# Make Array of Hashes
+   	push( @CurrentRegStateHashArray, \%CurrentRegStateHash );
+ 	close $fileHANDLE;
+}
+	print Dumper(@CurrentRegStateHashArray);
 	# Change ALL Shift Register States to Mux in the Desired ABUS Node
 	
 	# Shift Out New Bits to ALL Shift Registers
 	
-	
+	return 1;
 }
 
 1;
