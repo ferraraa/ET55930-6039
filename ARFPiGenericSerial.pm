@@ -1,11 +1,12 @@
 package ARFPiGenericSerial;
+use ET55930_6039_Environment;
 use Data::Dumper;
 
 sub BitBangSPI_Setup {
     ## Input 1: Yet-to-be intialized GPIO Pin for SCLK
     ## Input 2: Yet-to-be intialized GPIO Pin for MOSI
     ## Input 3: Yet-to-be intialized GPIO Pin for MISO
-    ## Output: SPI Bus Array in the form of [SCLK, MOSI, MISO]
+    ## Output: None
     ## This routine initilizes a SPI Bus using Sysfs GPIO methods.
     my $SCLKpin = shift;
     my $MOSIpin = shift;
@@ -14,6 +15,7 @@ sub BitBangSPI_Setup {
     system( "echo " . $SCLKpin . " >/sys/class/gpio/export" );
     system( "echo " . $MOSIpin . " >/sys/class/gpio/export" );
     system( "echo " . $MISOpin . " >/sys/class/gpio/export" );
+    system( "sudo chmod -R 777 /sys/class/gpio/gpio*");
 
     system( "echo out >/sys/class/gpio/gpio" . $SCLKpin . "/direction" );
     system( "echo out >/sys/class/gpio/gpio" . $MOSIpin . "/direction" );
@@ -22,54 +24,52 @@ sub BitBangSPI_Setup {
     system( "echo 0 >/sys/class/gpio/gpio" . $SCLKpin . "/value" );
     system( "echo 0 >/sys/class/gpio/gpio" . $MOSIpin . "/value" );
 
-    return ( $SCLKpin, $MOSIpin, $MISOpin );
 }
 
 sub BitBangSPI_CleanUp {
-    ## Input 1: SPI Bus Array in the form of [SCLK, MOSI, MISO]
+    ## Input 1: Intialized GPIO Pin for SCLK
+    ## Input 2: Intialized GPIO Pin for MOSI
+    ## Input 3: Intialized GPIO Pin for MISO
     ## Output: None
     ## This routine cleans up a SPI Bus using Sysfs GPIO methods.
-    my @SPIBus = ( shift, shift, shift );
+    my $SCLKpin = shift;
+    my $MOSIpin = shift;
+    my $MISOpin = shift;
 
-    system( "echo " . $SPIBus[0] . " >/sys/class/gpio/unexport" );
-    system( "echo " . $SPIBus[1] . " >/sys/class/gpio/unexport" );
-    system( "echo " . $SPIBus[2] . " >/sys/class/gpio/unexport" );
+    system( "echo " . $SCLKpin . " >/sys/class/gpio/unexport" );
+    system( "echo " . $MOSIpin . " >/sys/class/gpio/unexport" );
+    system( "echo " . $MISOpin . " >/sys/class/gpio/unexport" );
 }
 
 sub BitBangShiftReg_Setup {
-    ## Input 1: Yet-to-be intialized GPIO Pin for Shift CLK
-    ## Input 2: Yet-to-be intialized GPIO Pin for Shift Data
-    ## Input 3: Yet-to-be intialized GPIO Pin for Shift Latch
+    ## Input: None
     ## Output: Shift Register Bus in the Form of [CLK, Data, Latch]
     ## This routine initilizes a Shift Register Bus using Sysfs GPIO methods.
-    my $ShCLKpin   = shift;
-    my $ShDATApin  = shift;
-    my $ShLATCHpin = shift;
 
-    system( "echo " . $ShCLKpin . " >/sys/class/gpio/export" );
-    system( "echo " . $ShDATApin . " >/sys/class/gpio/export" );
-    system( "echo " . $ShLATCHpin . " >/sys/class/gpio/export" );
+    system( "echo " . $SCLK_ShiftReg . " >/sys/class/gpio/export" );
+    system( "echo " . $Data_ShiftReg . " >/sys/class/gpio/export" );
+    system( "echo " . $Latch_ShiftReg . " >/sys/class/gpio/export" );
+    system( "sudo chmod -R 777 /sys/class/gpio/gpio*");
 
-    system( "echo out >/sys/class/gpio/gpio" . $ShCLKpin . "/direction" );
-    system( "echo out >/sys/class/gpio/gpio" . $ShDATApin . "/direction" );
-    system( "echo out >/sys/class/gpio/gpio" . $ShLATCHpin . "/direction" );
+    system( "echo out >/sys/class/gpio/gpio" . $SCLK_ShiftReg . "/direction" );
+    system( "echo out >/sys/class/gpio/gpio" . $Data_ShiftReg . "/direction" );
+    system( "echo out >/sys/class/gpio/gpio" . $Latch_ShiftReg . "/direction" );
 
-    system( "echo 0 >/sys/class/gpio/gpio" . $ShCLKpin . "/value" );
-    system( "echo 0 >/sys/class/gpio/gpio" . $ShDATApin . "/value" );
-    system( "echo 0 >/sys/class/gpio/gpio" . $ShLATCHpin . "/value" );
+    system( "echo 0 >/sys/class/gpio/gpio" . $SCLK_ShiftReg . "/value" );
+    system( "echo 0 >/sys/class/gpio/gpio" . $Data_ShiftReg . "/value" );
+    system( "echo 0 >/sys/class/gpio/gpio" . $Latch_ShiftReg . "/value" );
 
-    return ( [ $ShCLKpin, $ShDATApin, $ShLATCHpin ] );
+    return ( [ $SCLK_ShiftReg, $Data_ShiftReg, $Latch_ShiftReg ] );
 }
 
 sub BitBangShiftReg_CleanUp {
-    ## Input 1: Shift Register Array in the form of [CLK, Data, Latch]
+    ## Input: None
     ## Output: None
     ## This routine cleans up a shift register bus.
-    my @ShiftRegBus = ( shift, shift, shift );
 
-    system( "echo " . $ShiftRegBus[0] . " >/sys/class/gpio/unexport" );
-    system( "echo " . $ShiftRegBus[1] . " >/sys/class/gpio/unexport" );
-    system( "echo " . $ShiftRegBus[2] . " >/sys/class/gpio/unexport" );
+    system( "echo " . $SCLK_ShiftReg . " >/sys/class/gpio/unexport" );
+    system( "echo " . $Data_ShiftReg . " >/sys/class/gpio/unexport" );
+    system( "echo " . $Latch_ShiftReg . " >/sys/class/gpio/unexport" );
 }
 
 sub BitBangSPIWrite {
@@ -147,14 +147,11 @@ sub BitBangSPIRead {
 }
 
 sub BitBangShiftRegShiftNoLatch {
-    ## Input 1: Initialized Shift Register Bus Array in the form of [CLK, Data, Latch]
-    ## Input 2: Data to be shifted, in the form of a binary string.
+    ## Input 1: Data to be shifted, in the form of a REFERENCE to a binary ARRAY, LSB is Index 0.
     ## Output: None
     ## This routine shifts data through a shift register bus
-    my @ShiftRegBus = ( shift, shift, shift );
-    my $Data        = shift;
-
-    my @DataBits = split( //, $Data );
+    my $DataBits        = shift;
+	
     ##Shift Register Write Order of Operations:
 # Latch Should Be Held Low
 # First Data Bit is Sent and Held
@@ -165,13 +162,13 @@ sub BitBangShiftRegShiftNoLatch {
 # Clock Edge Falls
 # Etc Etc
 # Rising Edge of the Latch Latches ALL of the bit in the Shift Register to the Storage (Output) Register
-    system( "echo 0 >/sys/class/gpio/gpio" . $ShiftRegBus[2] . "/value" );
-    for ( my $count = 0 ; $count < scalar(@DataBits) ; $count++ ) {
-        system( "echo " . $DataBits[$count] . " >/sys/class/gpio/gpio" . $ShiftRegBus[1] . "/value" );
-        system( "echo 1 >/sys/class/gpio/gpio" . $ShiftRegBus[0] . "/value" );
-        system( "echo 0 >/sys/class/gpio/gpio" . $ShiftRegBus[0] . "/value" );
+    system( "echo 0 >/sys/class/gpio/gpio" . $Latch_ShiftReg . "/value" );
+    for ( my $count = 0 ; $count < scalar(@{$DataBits}) ; $count++ ) {
+        system( "echo " . $DataBits->[$count] . " >/sys/class/gpio/gpio" . $Data_ShiftReg . "/value" );
+        system( "echo 1 >/sys/class/gpio/gpio" . $SCLK_ShiftReg . "/value" );
+        system( "echo 0 >/sys/class/gpio/gpio" . $SCLK_ShiftReg . "/value" );
     }
-    system( "echo 1 >/sys/class/gpio/gpio" . $ShiftRegBus[2] . "/value" );
+    system( "echo 1 >/sys/class/gpio/gpio" . $Latch_ShiftReg . "/value" );
 
 }
 

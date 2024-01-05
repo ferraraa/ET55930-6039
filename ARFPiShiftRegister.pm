@@ -2,27 +2,28 @@ package ARFPiShiftRegister;
 
 use ET55930_6039_Environment;
 use ARFPiGenericSerial;
-use ARFPiGPIO
+use ARFPiGPIO;
+use Data::Dumper;
 
-  sub BitBangShiftRegistersSetup {
+sub BitBangShiftRegistersSetup {
     ## Input: None
     ## Output: None
     ## This routine sets up the SPI1 Bus for the DACs
-    our @ShiftRegBus = ARFPiGenericSerial::BitBangShiftReg_Setup( $SCLK_ShiftReg, $Data_ShiftReg, $Latch_ShiftReg );
+    our @ShiftRegBus = ARFPiGenericSerial::BitBangShiftReg_Setup();
     ARFPiGPIO::InitializeGPIO( $EncodedCS0_ShiftReg, "out", 0 );
     ARFPiGPIO::InitializeGPIO( $EncodedCS1_ShiftReg, "out", 0 );
     ARFPiGPIO::InitializeGPIO( $EncodedCS2_ShiftReg, "out", 0 );
     ARFPiGPIO::InitializeGPIO( $EncodedCS3_ShiftReg, "out", 0 );
 
     # Make sure Decoder is Disabled, sets all outputs to logic HIGH
-    ARFPiGPIO::WriteGPIO( $ShiftRegBus[2], 0 );
+    ARFPiGPIO::WriteGPIO( $Latch_ShiftReg, 0 );
 }
 
 sub BitBangShiftRegistersCleanUp {
     ## Input: None
     ## Output: None
     ## This routine sets up the SPI1 Bus for the DACs
-    ARFPiGenericSerial::BitBangShiftReg_CleanUp(@ShiftRegBus);
+    ARFPiGenericSerial::BitBangShiftReg_CleanUp();
     ARFPiGPIO::UninitializeGPIO($EncodedCS0_ShiftReg);
     ARFPiGPIO::UninitializeGPIO($EncodedCS1_ShiftReg);
     ARFPiGPIO::UninitializeGPIO($EncodedCS2_ShiftReg);
@@ -31,47 +32,45 @@ sub BitBangShiftRegistersCleanUp {
 }
 
 sub BitBangShiftRegisterWrite {
-    ## Input 1: Shift Register Bus Array in the form of [CLK, Data, Latch]
-    ## Input 2: Shift Register ... Register. In the form of "ET1"
+    ## Input 1: Shift Register ... Register. In the form of "ET1"
     # The Prefix to the Schematic/Physical Net Names for driving the Shift Register
     # This net name will be decoded into the proper GPIO Levels
-    ## Input 3: Data to be sent in the form of a binary STRING
+    ## Input 2: Data to be sent in the form of a REFERENCE to a binary ARRAY, LSB is Index 0
     # Be careful. Refer to the truth tables
     ## Output: None
 
-    my @ShiftRegBus      = shift;
     my $ShiftRegRegister = shift;
     my $Data             = shift;
-
-    my @SPIORegister;
-    if ( $ShiftRegRegister == "ET1" ) {
+	
+    my @GPIORegister;
+    if ( $ShiftRegRegister eq "ET1" ) {
         @GPIORegister = @ShiftReg_ET1;
     }
-    elsif ( $ShiftRegRegister == "ET2" ) {
+    elsif ( $ShiftRegRegister eq "ET2" ) {
         @GPIORegister = @ShiftReg_ET2;
     }
-    elsif ( $ShiftRegRegister == "SrcOut" ) {
+    elsif ( $ShiftRegRegister eq "SrcOut" ) {
         @GPIORegister = @ShiftReg_SrcOut;
     }
-    elsif ( $ShiftRegRegister == "YIGDiv" ) {
+    elsif ( $ShiftRegRegister eq "YIGDiv" ) {
         @GPIORegister = @ShiftReg_YIGDiv;
     }
-    elsif ( $ShiftRegRegister == "BotGr3" ) {
+    elsif ( $ShiftRegRegister eq "BotGr3" ) {
         @GPIORegister = @ShiftReg_BotGrp3;
     }
-    elsif ( $ShiftRegRegister == "RFPathDCPower_ABUS" ) {
+    elsif ( $ShiftRegRegister eq "RFPathDCPower_ABUS" ) {
         @GPIORegister = @ShiftReg_RFPathDC;
     }
-    elsif ( $ShiftRegRegister == "TopGr2" ) {
+    elsif ( $ShiftRegRegister eq "TopGr2" ) {
         @GPIORegister = @ShiftReg_TopGrp2;
     }
-    elsif ( $ShiftRegRegister == "TopGr1" ) {
+    elsif ( $ShiftRegRegister eq "TopGr1" ) {
         @GPIORegister = @ShiftReg_TopGrp1;
     }
-    elsif ( $ShiftRegRegister == "SrcOut_PulseMod_Delay" ) {
+    elsif ( $ShiftRegRegister eq "SrcOut_PulseMod_Delay" ) {
         @GPIORegister = @ShiftReg_PulseModDelay;
     }
-    elsif ( $ShiftRegRegister == "MechStepAtten" ) {
+    elsif ( $ShiftRegRegister eq "MechStepAtten" ) {
         @GPIORegister = @ShiftReg_MechStepAtten;
     }
     else {
@@ -93,7 +92,7 @@ sub BitBangShiftRegisterWrite {
     # on the desired RCLK.
 
     # Make sure the Latch Pin is High, Rising Edge Latches Bits from the Shift Reg to Storage (Output) Register
-    system( "echo 0 >/sys/class/gpio/gpio" . $ShiftRegBus[2] . "/value" );    #Disabling Decoder sends all outputs high
+    system( "echo 0 >/sys/class/gpio/gpio" . $Latch_ShiftReg . "/value" );    #Disabling Decoder sends all outputs high
 
     # Decode Shift Register RCLK
     system( "echo " . $GPIORegister[0] . " >/sys/class/gpio/gpio" . $EncodedCS0_ShiftReg . "/value" );
@@ -102,13 +101,13 @@ sub BitBangShiftRegisterWrite {
     system( "echo " . $GPIORegister[3] . " >/sys/class/gpio/gpio" . $EncodedCS3_ShiftReg . "/value" );
 
     # Enabling the Decoder will send the above decoded RCLK pin Low, in prep for the rising, Latching RCLK edge
-    system( "echo 1 >/sys/class/gpio/gpio" . $ShiftRegBus[2] . "/value" );
+    system( "echo 1 >/sys/class/gpio/gpio" . $Latch_ShiftReg . "/value" );
 
     # Shift the bits out
-    ARFPiGenericSerial::BitBangShiftRegShiftNoLatch( @ShiftRegBus, $Data );
+    ARFPiGenericSerial::BitBangShiftRegShiftNoLatch( $Data );
 
     # Rising Edge of the RCLK Latches the bits to the output. Done by disabling the Decoder
-    system( "echo 0 >/sys/class/gpio/gpio" . $ShiftRegBus[2] . "/value" );
+    system( "echo 0 >/sys/class/gpio/gpio" . $Latch_ShiftReg . "/value" );
 
     # Done
 }

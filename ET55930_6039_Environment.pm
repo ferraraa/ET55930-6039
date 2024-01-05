@@ -4,6 +4,7 @@ use Data::Dumper;
 our ( $VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS );
 @ISA = qw(Exporter);
 our (@EXPORT) = qw (
+  $GPIODir
   $ProjectDir
   $RegisterDir
   $ABUSDir
@@ -45,6 +46,8 @@ our (@EXPORT) = qw (
   @ABUSRegisterHashArray
   @PathIDRegisterHashArray
 );
+
+our $GPIODir = "/sys/class/gpio/";
 
 our $ProjectDir = "/projects/ET55930-6039/";
 
@@ -106,16 +109,16 @@ our $PulseDelayEn = 23;           # 40 Pin Connector 16
 # have been assigned to encoding the 10 (16 possible) banks.
 our @ShiftRegNameArray =
   ( "BotGr3", "ET1", "ET2", "MechStepAtten", "RFPathDCPower_ABUS", "SrcOut", "TopGr1", "TopGr2", "YIGDiv" );
-our @ShiftReg_ET1           = [ 0, 0, 0, 1 ];
-our @ShiftReg_ET2           = [ 0, 0, 1, 0 ];
-our @ShiftReg_SrcOut        = [ 0, 0, 1, 1 ];
-our @ShiftReg_YIGDiv        = [ 0, 1, 0, 0 ];
-our @ShiftReg_BotGrp3       = [ 0, 1, 0, 1 ];
-our @ShiftReg_RFPathDC      = [ 0, 1, 1, 0 ];
-our @ShiftReg_TopGrp2       = [ 0, 0, 1, 1 ];
-our @ShiftReg_TopGrp1       = [ 1, 0, 0, 0 ];
-our @ShiftReg_PulseModDelay = [ 1, 0, 0, 1 ];
-our @ShiftReg_MechStepAtten = [ 1, 1, 1, 0 ];
+our @ShiftReg_ET1           = ( 0, 0, 0, 1 );
+our @ShiftReg_ET2           = ( 0, 0, 1, 0 );
+our @ShiftReg_SrcOut        = ( 0, 0, 1, 1 );
+our @ShiftReg_YIGDiv        = ( 0, 1, 0, 0 );
+our @ShiftReg_BotGrp3       = ( 0, 1, 0, 1 );
+our @ShiftReg_RFPathDC      = ( 0, 1, 1, 0 );
+our @ShiftReg_TopGrp2       = ( 0, 0, 1, 1 );
+our @ShiftReg_TopGrp1       = ( 1, 0, 0, 0 );
+our @ShiftReg_PulseModDelay = ( 1, 0, 0, 1 );
+our @ShiftReg_MechStepAtten = ( 1, 1, 1, 0 );
 
 #########################################
 ## Shift Register Chip Select Decoding ##
