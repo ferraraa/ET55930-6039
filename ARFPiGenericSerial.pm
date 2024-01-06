@@ -164,6 +164,7 @@ sub BitBangShiftRegShiftNoLatch {
 # Rising Edge of the Latch Latches ALL of the bit in the Shift Register to the Storage (Output) Register
     system( "echo 0 >/sys/class/gpio/gpio" . $Latch_ShiftReg . "/value" );
     for ( my $count = 0 ; $count < scalar(@{$DataBits}) ; $count++ ) {
+    print Dumper($DataBits->[$count]);
         system( "echo " . $DataBits->[$count] . " >/sys/class/gpio/gpio" . $Data_ShiftReg . "/value" );
         system( "echo 1 >/sys/class/gpio/gpio" . $SCLK_ShiftReg . "/value" );
         system( "echo 0 >/sys/class/gpio/gpio" . $SCLK_ShiftReg . "/value" );

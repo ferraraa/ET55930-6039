@@ -6,9 +6,9 @@ our ( $VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS );
 our (@EXPORT) = qw (
   $GPIODir
   $ProjectDir
-  $RegisterDir
   $ABUSDir
-  $CurrentRegisterStateDir
+  $PathIDDir
+  $ControlDir
   $MOSI_ModDACs
   $MISO_ModDACs
   $SCLK_ModDACs
@@ -45,6 +45,8 @@ our (@EXPORT) = qw (
   @ShiftReg_MechStepAtten
   @ABUSRegisterHashArray
   @PathIDRegisterHashArray
+  @EnableHashArray
+  @CurrentRegStateHashArray
 );
 
 our $GPIODir = "/sys/class/gpio/";
@@ -57,7 +59,9 @@ our $ABUSRegMap = $ABUSDir . "RegisterMap_ABUS.txt";
 our $PathIDDir = $ProjectDir . "ControlRegisters/PathID/";
 our $PathIDMap = $PathIDDir . "PathIDRegisters.txt";
 
-our $CurrentRegisterStateDir = $ProjectDir . "ControlRegisters/CurrentState/";
+our $ControlDir = $ProjectDir . "ControlRegisters/";
+
+our $EnableMap = $ControlDir . "Enables.txt";
 
 ##############################################
 ## Raspberry Pi 40 Pin Connector Assignment ##
@@ -127,7 +131,7 @@ our @ShiftReg_MechStepAtten = ( 1, 1, 1, 0 );
 ###################################
 ## Read in ABUS Register Mapping ##
 ###################################
-$/ = "\r\n";    #Windoze New Line is Terrible
+#$/ = "\r\n";    #Windoze New Line is Terrible
 my %ABUSRegisterHash;
 our @ABUSRegisterHashArray;
 my $ABUSRegLine;
@@ -140,6 +144,7 @@ my @ParsedABUSHeader = split( '\t', $ABUSRegLine );
 shift(@ParsedABUSHeader);
 shift(@ParsedABUSHeader);
 shift(@ParsedABUSHeader);
+shift(@ParsedABUSHeader);
 
 $ABUSRegLine = <$ABUSRegFileHANDLE>;
 chomp($ABUSRegLine);
@@ -147,10 +152,12 @@ my @ParsedABUSRegisterNames = split( '\t', $ABUSRegLine );
 shift(@ParsedABUSRegisterNames);
 shift(@ParsedABUSRegisterNames);
 shift(@ParsedABUSRegisterNames);
+shift(@ParsedABUSRegisterNames);
 
 $ABUSRegLine = <$ABUSRegFileHANDLE>;
 chomp($ABUSRegLine);
 my @ParsedABUSRegisterBits = split( '\t', $ABUSRegLine );
+shift(@ParsedABUSRegisterBits);
 shift(@ParsedABUSRegisterBits);
 shift(@ParsedABUSRegisterBits);
 shift(@ParsedABUSRegisterBits);
@@ -163,6 +170,7 @@ while ( $ABUSRegLine = <$ABUSRegFileHANDLE> ) {
     my %ABUSRegisterHash =
       (    # Need to be my %blah to recreate the Hash. Only way to make an array of hashes in a loop.... IDK.
         Name               => shift(@ParsedABUSRegLine),
+        ExpectedValue	   => shift(@ParsedABUSRegLine),
         RScale             => shift(@ParsedABUSRegLine),
         ADCRange           => shift(@ParsedABUSRegLine),
         BotGr3             => [ (X) x 32 ],
@@ -181,7 +189,7 @@ while ( $ABUSRegLine = <$ABUSRegFileHANDLE> ) {
         $ABUSRegisterHash{ $ParsedABUSRegisterNames[$count] }[ $ParsedABUSRegisterBits[$count] ] =
           $ParsedABUSRegLine[$count];
     }
-
+	
     # Make Array of Hashes
     push( @ABUSRegisterHashArray, \%ABUSRegisterHash );
 
@@ -189,7 +197,7 @@ while ( $ABUSRegLine = <$ABUSRegFileHANDLE> ) {
 }
 
 close $ABUSRegFileHANDLE;
-$/ = "\n";    #Return to Linux New Line
+#$/ = "\n";    #Return to Linux New Line
 ###################################
 ## Read in ABUS Register Mapping ##
 ###################################
@@ -359,5 +367,103 @@ $/ = "\n";    #Return to Linux New Line
 ###################################
 ## Read in PathID Register Mapping ##
 ###################################
+
+###################################
+## Read in Enable Mapping ##
+###################################
+#$/ = "\r\n";    #Windoze New Line is Terrible
+my %EnableHash;
+our @EnableHashArray;
+my $EnableLine;
+
+# Open ABUS Register File
+open my $EnableFileHANDLE, $EnableMap or die "Could not open $EnableMap: $!";
+$EnableLine = <$EnableFileHANDLE>;    # This line is header line
+chomp($EnableLine);
+my @ParsedEnableHeader = split( '\t', $EnableLine );
+
+
+$EnableLine = <$EnableFileHANDLE>;
+chomp($EnableLine);
+my @EnableRegisterNames = split( '\t', $EnableLine );
+
+
+$EnableLine = <$EnableFileHANDLE>;
+chomp($EnableLine);
+my @EnableRegisterBits = split( '\t', $EnableLine );
+
+for ( my $count = 0; $count < scalar(@EnableRegisterBits); $count++ ) {
+
+    # Create an ABUS Node Hash, prepopulate the registers with Don't Cares 'Xs'
+    my %EnableHash =
+      (    # Need to be my %blah to recreate the Hash. Only way to make an array of hashes in a loop.... IDK.
+        Name               => $ParsedEnableHeader[$count],
+        RegName				=> $EnableRegisterNames[$count],
+        RegBit				=> $EnableRegisterBits[$count],
+        BotGr3             => [ (X) x 32 ],
+        ET1                => [ (X) x 32 ],
+        ET2                => [ (X) x 32 ],
+        MechStepAtten      => [ (X) x 32 ],
+        RFPathDCPower_ABUS => [ (X) x 32 ],
+        SrcOut             => [ (X) x 32 ],
+        TopGr1             => [ (X) x 32 ],
+        TopGr2             => [ (X) x 32 ],
+        YIGDiv             => [ (X) x 32 ]
+      );
+
+    # Correct the Registers in the ABUS Hash, Write over the Don't Cares
+    for ( my $regcount = 0 ; $regcount < scalar(@ShiftRegNameArray) ; $regcount++ ) {
+        $EnableRegisterHash{ $ShiftRegNameArray[$regcount] }[ $EnableRegisterBits[$count] ] =
+          1;
+    }
+	
+    # Make Array of Hashes
+    push( @EnableHashArray, \%EnableHash );
+
+    #print Dumper($ABUSRegisterHashArray[0]{Name});
+}
+
+close $EnableFileHANDLE;
+#$/ = "\n";    #Return to Linux New Line
+###################################
+## Read in Enable Mapping ##
+###################################
+getCurrentRegisterState();
+###################################
+## Read in Current Register State ##
+###################################
+sub getCurrentRegisterState {
+#$/ = "\r\n";    #Windoze New Line is Terrible
+my %CurrentRegStateHash;
+our @CurrentRegStateHashArray;
+my $CurrentRegStateLine;
+
+# Open ABUS Register File
+open my $CurrentRegStateFileHANDLE, $ControlDir . "CurrentState.txt" or die "Could not open $EnableMap: $!";
+while ($CurrentRegStateLine = <$CurrentRegStateFileHANDLE> ) {
+	my @CurrentRegStateArray = split ("\t", $CurrentRegStateLine);
+	
+    # Create an ABUS Node Hash, prepopulate the registers with Don't Cares 'Xs'
+    my %CurrentRegHash =
+      (    # Need to be my %blah to recreate the Hash. Only way to make an array of hashes in a loop.... IDK.
+        RegName               => shift(@CurrentRegStateArray),
+        CurrentBits             => \@CurrentRegStateArray
+      );
+
+	
+    # Make Array of Hashes
+    push( @CurrentRegStateHashArray, \%CurrentRegHash );
+
+    #print Dumper($ABUSRegisterHashArray[0]{Name});
+}
+
+close $CurrentRegStateFileHANDLE;
+}
+#$/ = "\n";    #Return to Linux New Line
+###################################
+## Read in Current Register State ##
+###################################
+
+
 1;
 

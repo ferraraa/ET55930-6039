@@ -3,13 +3,15 @@ use strict;
 
 #use lib '/projects/WebsiteModules';
 use lib '/projects/ET55930-6039';
+use ET55930_6039_Environment;
+use ABUS;
 
 #use Config qw(myconfig config_sh config_vars);
 use Data::Dumper;
 use CGI;
+use CGI::Pretty;
 use Sys::Hostname;
-use ET55930_6039_Environment;
-
+use Time::HiRes;
 #use CGI::HTML::Functions;
 #use Cwd;
 #use filesystem;
@@ -24,7 +26,7 @@ use ET55930_6039_Environment;
 my $cgi                            = CGI->new;
 my $host                           = hostname;
 my @currentscriptfilebeingexecuted = split( "/", $0 );
-my $formpath                       = "/cgi-bin/" . $currentscriptfilebeingexecuted[$#currentscriptfilebeingexecuted];
+my $formpath                       = "/cgi-bin/ABUSScripts/" . $currentscriptfilebeingexecuted[$#currentscriptfilebeingexecuted];
 my $htmldir                        = "/var/www/html/";
 
 my $WebJustStarted = 0;
@@ -35,13 +37,13 @@ my $WebJustStarted = 0;
 print "Content-type: text/html\n\n";
 print $cgi->start_html("ABUS");
 print $cgi->a( { href => ( "http://" . $host . "/" ) }, "Return Home" );
-print "<H2>Read One ABUS Node</H2>\n";
+print "<H2>Read ALL ABUS Nodes</H2>\n";
 ## Check to see what options have been selected
 
-my @resetoption = $cgi->param("Reset");
+my @resetoption = $cgi->param("Reset the Webpage");
 my @resetboxch  = $cgi->param("Check This If You Want to Reset the Form, Good When Funky Stuff Happens");
 
-if ( @resetoption && @resetboxch ) {
+if ( @resetoption ) {
     $WebJustStarted = 1;
     $cgi->delete_all();
 }
@@ -55,15 +57,9 @@ print $cgi->start_form(
 );
 print $cgi->div(
     $cgi->submit(
-        -name   => "Reset",
-        -id     => "Reset",
+        -name   => "Reset the Webpage",
+        -id     => "Reset the Webpage",
         -values => "Submit"
-    ),
-    $cgi->checkbox(
-        -name    => "Check This If You Want to Reset the Form, Good When Funky Stuff Happens",
-        -id      => "resetbox",
-        -value   => "resetboxchecked",
-        -default => "unchecked"
     )
 );
 $cgi->end_form;
@@ -73,10 +69,43 @@ print "<br><br><br><br>";
 #######################################################################################
 ##################### Print List of ABUS Nodes
 #######################################################################################
-#print Dumper(@PathIDRegisterHashArray);
-for ( my $count = 0 ; $count < scalar(@ABUSRegisterHashArray) ; $count++ ) {
-    print $ABUSRegisterHashArray[$count]{Name} . "<br>";
-}
+print "At the current state of this 'firmware', this measurement will take approximately 90 seconds<br>";
+print "There are 118 ABUS Nodes to be measured<br>";
+print "Also, each measurement is actually three ABUS measurements. The first is thrown away, the resulting 'Measurement Value' is the average of the final two<br>";
+my $ReadButtonText = "Read ALL";
+my @readoption = $cgi->param($ReadButtonText);
+print $cgi->start_form(
+    -method => 'post',
+    -action => $formpath
+);
+print $cgi->div(
+    $cgi->submit(
+        -name   => $ReadButtonText,
+        -id     => $ReadButtonText,
+        -values => "Submit"
+    )
+);
 $cgi->end_form;
+if (@readoption) {
+my $StartTime = time();
+# Make ABUS Measurement Table
+my $ABUSTable = [$cgi->th(["Node","Expected Value","Measured Value"])];
+my $CurrentABUSNodeName;
+my @CurrentABUSNodeNameSplit;
+my $ABUSPhysicalReading = 1;
+for ( my $count = 0 ; $count < scalar(@ABUSRegisterHashArray) ; $count++ ) {
+        $ABUSPhysicalReading = ABUS::BitBangABUSNodeRead( $ABUSRegisterHashArray[$count] );
+        push @$ABUSTable, $cgi->td([$ABUSRegisterHashArray[$count]{Name}, $ABUSRegisterHashArray[$count]{ExpectedValue} , $ABUSPhysicalReading]);
+
+
+}
+
+print $cgi->table( { border => 1, -width => '50%'},
+                   $cgi->Tr( $ABUSTable),
+                 );
+my $EndTime = time();
+print "<br><br><br>Elapsed Measurement Time: " . ($EndTime-$StartTime) . " Seconds<br><br><br>";
+}
+
 
 print $cgi->end_html();

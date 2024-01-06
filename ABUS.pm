@@ -1,15 +1,14 @@
 package ABUS;
 use ET55930_6039_Environment;
 use ARFPiShiftRegister;
+use ARFConvert;
 use Data::Dumper;
 
 sub BitBangABUSADCRead {
     ## Input: None
-    ## Output: Physical Data
+    ## Output: Raw ADC Data
     ## This routine writes via SPI Protocol
-    my $ABUSNodeScale = shift;
 
-    my @DataBits = split( //, $Data );
     my $ABUSReadCount;
     my $count;
     my @ABUSDataBits;
@@ -57,15 +56,14 @@ sub BitBangABUSADCRead {
         system( "echo 1 >/sys/class/gpio/gpio" . $CS_ABUS . "/value" );
 
         # Convert Read Binary Data to Decimal
-        $ABUSBitString = join( "", @ABUSDataBits );
-        $ABUSADCCodes[$ABUSReadCount] = ARFConvert::BinaryToDecimal($ABUSBitString);
+        $ABUSBitString = join( "", @ABUSDataBits ); #MSB Is Index ZERO!
+        $ABUSADCDecimalCodes[$ABUSReadCount] = ARFConvert::BinaryToDecimal($ABUSBitString);
     }
 
     # Throw away first ABUS Reading, Average the last two
-    my $AvgABUSADCCode       = ( $ABUSADCCodes[1] + $ABUSADCCodes[2] ) / 2;
-    my $AvgABUSPhysicalValue = $ABUSNodeScale * $AvgABUSADCCode;
+    my $AvgABUSDecimalCode       = ( $ABUSADCDecimalCodes[1] + $ABUSADCDecimalCodes[2] ) / 2;
 
-    return $AvgABUSPhysicalValue;
+    return $AvgABUSDecimalCode;
 }
 
 sub BitBangABUSNodeRead {
@@ -77,43 +75,47 @@ sub BitBangABUSNodeRead {
     my $CurrentRegState;
     my @CurrentRegStateArray;
     my @CurrentRegStateHashArray;
-	my $fileHANDLE;
-    for ( my $count = 0 ; $count < scalar(@ShiftRegNameArray) ; $count++ ) {
+    
+	open( my $CurrentStateHANDLE, "<" , $ControlDir . "CurrentState.txt" );
+	open( my $NewStateHANDLE, ">" , $ControlDir . "NewState.txt" );
+    while ( $CurrentRegState = <$CurrentStateHANDLE> ) {
 
-        # Read Current State of Register
-        open( $fileHANDLE, "<" . $CurrentRegisterStateDir . $ShiftRegNameArray[$count] . ".txt" );
-        $CurrentRegState = <$fileHANDLE>;
-        close $fileHANDLE;
+        # Read Current State of Register Line by Line
+        # First Value is the Register Name
+        # Next 32 Values are each of the Register Bits, LSB is Index ZERO! Closest to Register Name
 		chomp($CurrentRegState);
         my @CurrentRegStateArray = split( "\t", $CurrentRegState );        
-
+		my $CurrentReg = shift(@CurrentRegStateArray);
+		my @NewRegStateArray;
         # Mask the Current Register State with what is Needed
         for ( my $bitcount = 0 ; $bitcount < scalar(@CurrentRegStateArray) ; $bitcount++ ) {
-            if ( $ABUSNodeHash->{ $ShiftRegNameArray[$count] }[$bitcount] eq "X" ) {
+            if ( $ABUSNodeHash->{ $CurrentReg }[$bitcount] eq "X" ) {
                 $NewRegStateArray[$bitcount] = $CurrentRegStateArray[$bitcount];
             }
             else {
-                $NewRegStateArray[$bitcount] = $ABUSNodeHash->{ $ShiftRegNameArray[$count] }[$bitcount];
+                $NewRegStateArray[$bitcount] = $ABUSNodeHash->{ $CurrentReg }[$bitcount];
             }
         }
         
         # Write over the Current Register State File with what is about to be set as the State
-        open( $fileHANDLE, ">" . $CurrentRegisterStateDir . $ShiftRegNameArray[$count] . ".txt" );
+        my $NewRegStateBits = join( "\t", @NewRegStateArray );
+        unshift @NewRegStateArray, $CurrentReg;
         my $NewRegStateLine = join( "\t", @NewRegStateArray );
-        seek( $fileHANDLE, 0, 0 );
-        print $fileHANDLE $NewRegStateLine;
-        truncate( $fileHANDLE, tell($fileHANDLE) );
-        close $fileHANDLE;
-        
-        # Shift the bits out onto the current register
-        ARFPiShiftRegister::BitBangShiftRegisterWrite($ShiftRegNameArray[$count], \@NewRegStateArray);
+        print $NewStateHANDLE ($NewRegStateLine . "\n");
+        # Shift the bits out onto the current register, LSB is Index ZERO!
+        ARFPiShiftRegister::BitBangShiftRegisterWrite($CurrentReg, \@NewRegStateBits);
+        # Andy Verified the Shift Register LSB/MSB Index Zero Problem is GOOD! 5Jan2024
         
     }
+    close $CurrentStateHANDLE;
+    close $NewStateHANDLE;
+    system("mv " . $ControlDir . "NewState.txt " . $ControlDir . "CurrentState.txt");
     
     ### Read the ABUS Node
-    
+    my $ABUSReading_RawData = BitBangABUSADCRead();
+    my $ABUSReading_Scaled = $ABUSReading_RawData * $ABUSNodeHash->{RScale};
 
-    return 1;
+    return $ABUSReading_RawData;
 }
 
 1;

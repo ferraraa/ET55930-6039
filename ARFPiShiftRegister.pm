@@ -103,13 +103,21 @@ sub BitBangShiftRegisterWrite {
     # Enabling the Decoder will send the above decoded RCLK pin Low, in prep for the rising, Latching RCLK edge
     system( "echo 1 >/sys/class/gpio/gpio" . $Latch_ShiftReg . "/value" );
 
-    # Shift the bits out
+    # Shift the bits out, LSB is Index ZERO! in the String
     ARFPiGenericSerial::BitBangShiftRegShiftNoLatch( $Data );
 
     # Rising Edge of the RCLK Latches the bits to the output. Done by disabling the Decoder
     system( "echo 0 >/sys/class/gpio/gpio" . $Latch_ShiftReg . "/value" );
 
     # Done
+}
+
+sub BitBangShiftRegisterAllZeros {
+	for (my $count = 0; $count < scalar(@ShiftRegNameArray); $count++) {
+		BitBangShiftRegisterWrite($ShiftRegNameArray[$count], [(0) x 32]);
+	}
+	system("cp " . $ControlDir . "AllZeroState.txt " . $ControlDir . "CurrentState.txt");
+	
 }
 
 1;
