@@ -47,6 +47,7 @@ our (@EXPORT) = qw (
   @PathIDRegisterHashArray
   @EnableHashArray
   @CurrentRegStateHashArray
+  @NextRegStateHashArray
 );
 
 our $GPIODir = "/sys/class/gpio/";
@@ -429,6 +430,7 @@ close $EnableFileHANDLE;
 ## Read in Enable Mapping ##
 ###################################
 getCurrentRegisterState();
+
 ###################################
 ## Read in Current Register State ##
 ###################################
@@ -438,26 +440,29 @@ my %CurrentRegStateHash;
 our @CurrentRegStateHashArray;
 my $CurrentRegStateLine;
 
-# Open ABUS Register File
-open my $CurrentRegStateFileHANDLE, $ControlDir . "CurrentState.txt" or die "Could not open $EnableMap: $!";
+# Open Register File
+open my $CurrentRegStateFileHANDLE, $ControlDir . "CurrentState.txt" or die;
+open my $NextRegStateFileHANDLE, $ControlDir . "NextState.txt" or die;
+seek $CurrentRegStateFileHANDLE, 0, 0;
+seek $NextRegStateFileHANDLE, 0, 0;
 while ($CurrentRegStateLine = <$CurrentRegStateFileHANDLE> ) {
+	print $NextRegStateFileHANDLE $CurrentRegStateLine;
+	chomp $CurrentRegStateLine;
 	my @CurrentRegStateArray = split ("\t", $CurrentRegStateLine);
 	
     # Create an ABUS Node Hash, prepopulate the registers with Don't Cares 'Xs'
-    my %CurrentRegHash =
+    my %CurrentRegisterStateHash =
       (    # Need to be my %blah to recreate the Hash. Only way to make an array of hashes in a loop.... IDK.
+		FileHANDLE			=> $CurrentRegStateFileHANDLE,
         RegName               => shift(@CurrentRegStateArray),
         CurrentBits             => \@CurrentRegStateArray
       );
-
-	
     # Make Array of Hashes
     push( @CurrentRegStateHashArray, \%CurrentRegHash );
-
-    #print Dumper($ABUSRegisterHashArray[0]{Name});
 }
-
-close $CurrentRegStateFileHANDLE;
+our @NextRegStateHashArray = @CurrentRegStateHashArray;
+seek $CurrentRegStateFileHANDLE, 0, 0;
+seek $NextRegStateFileHANDLE, 0, 0;
 }
 #$/ = "\n";    #Return to Linux New Line
 ###################################
