@@ -149,19 +149,19 @@ for ( my $count = 0 ; $count < scalar(@ABUSRegisterHashArray) ; $count++ ) {
     }
 
 }
-#for ( my $count = 0 ; $count < scalar(@ABUSRegisterHashArray) ; $count++ ) {
-#    $CurrentABUSNodeName      = $ABUSRegisterHashArray[$count]{Name};
-#    @CurrentABUSNodeNameSplit = split( "_", $CurrentABUSNodeName );
-#    if ( $CurrentABUSNodeNameSplit[0] eq "ACOM" || $CurrentABUSNodeNameSplit[0] eq "VLNRef" ) {
-#        $ABUSPhysicalReading = ABUS::BitBangABUSNodeRead(\@CurrentRegStateHashArray, $ABUSRegisterHashArray[$count] );
-#        if ($MultimeterMeas[0] ne "No") {
-#        $MeterMeasurement = $Meter -> iquery("READ?");
-#       
-#        }
-#        push @$ABUSTable, $cgi->td([$ABUSRegisterHashArray[$count]{Name}, $ABUSRegisterHashArray[$count]{ExpectedValue} , $ABUSPhysicalReading,  $MeterMeasurement]);
-#    }
+for ( my $count = 0 ; $count < scalar(@ABUSRegisterHashArray) ; $count++ ) {
+    $CurrentABUSNodeName      = $ABUSRegisterHashArray[$count]{Name};
+    @CurrentABUSNodeNameSplit = split( "_", $CurrentABUSNodeName );
+    if ( $CurrentABUSNodeNameSplit[0] eq "ACOM" || $CurrentABUSNodeNameSplit[0] eq "VLNRef" ) {
+        $ABUSPhysicalReading = ABUS::BitBangABUSNodeRead(\@CurrentRegStateHashArray, $ABUSRegisterHashArray[$count] );
+        if ($MultimeterMeas[0] ne "No") {
+        $MeterMeasurement = $Meter -> iquery("READ?");
+       
+        }
+        push @$ABUSTable, $cgi->td([$ABUSRegisterHashArray[$count]{Name}, $ABUSRegisterHashArray[$count]{ExpectedValue} , $ABUSPhysicalReading,  $MeterMeasurement]);
+    }
 
-#}
+}
 
 print $cgi->table( { border => 1, -width => '50%'},
                    $cgi->Tr( $ABUSTable),

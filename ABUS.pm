@@ -25,37 +25,49 @@ sub BitBangABUSADCRead {
         # Falling edge of SCLK Sets Next Bit out of ADC, there are three more LOWs. can be ignored
         # 16 Falling Edges will generate the 16 bits from the ADC. MSB is first.
         # CS Pulls High after Final Rising Clock Edge
-        system( "echo 1 >/sys/class/gpio/gpio" . $CS_ABUS . "/value" );
-        system( "echo 1 >/sys/class/gpio/gpio" . $SCLK_ABUS . "/value" );
-
-        system( "echo 0 >/sys/class/gpio/gpio" . $CS_ABUS . "/value" );    # Conversion Starts
+       # system( "echo 1 >/sys/class/gpio/gpio" . $CS_ABUS . "/value" );
+        write_file("/sys/class/gpio/gpio" . $CS_ABUS . "/value", 1);
+       # system( "echo 1 >/sys/class/gpio/gpio" . $SCLK_ABUS . "/value" );
+		write_file("/sys/class/gpio/gpio" . $SCLK_ABUS . "/value", 1);
+       # system( "echo 0 >/sys/class/gpio/gpio" . $CS_ABUS . "/value" );    # Conversion Starts
                                                                          # MISO is Set Low, Ignore
+        write_file("/sys/class/gpio/gpio" . $CS_ABUS . "/value", 0);
 
-        system( "echo 0 >/sys/class/gpio/gpio" . $SCLK_ABUS . "/value" );
-        system( "echo 1 >/sys/class/gpio/gpio" . $SCLK_ABUS . "/value" );
-
-        # MISO is Low, Again ... Ignore
-
-        system( "echo 0 >/sys/class/gpio/gpio" . $SCLK_ABUS . "/value" );
-        system( "echo 1 >/sys/class/gpio/gpio" . $SCLK_ABUS . "/value" );
+       # system( "echo 0 >/sys/class/gpio/gpio" . $SCLK_ABUS . "/value" );
+        write_file("/sys/class/gpio/gpio" . $SCLK_ABUS . "/value", 0);
+       # system( "echo 1 >/sys/class/gpio/gpio" . $SCLK_ABUS . "/value" );
+        write_file("/sys/class/gpio/gpio" . $SCLK_ABUS . "/value", 1);
 
         # MISO is Low, Again ... Ignore
 
-        system( "echo 0 >/sys/class/gpio/gpio" . $SCLK_ABUS . "/value" );
-        system( "echo 1 >/sys/class/gpio/gpio" . $SCLK_ABUS . "/value" );
+       # system( "echo 0 >/sys/class/gpio/gpio" . $SCLK_ABUS . "/value" );
+        write_file("/sys/class/gpio/gpio" . $SCLK_ABUS . "/value", 0);
+        #system( "echo 1 >/sys/class/gpio/gpio" . $SCLK_ABUS . "/value" );
+        write_file("/sys/class/gpio/gpio" . $SCLK_ABUS . "/value", 1);
 
+        # MISO is Low, Again ... Ignore
+
+        #system( "echo 0 >/sys/class/gpio/gpio" . $SCLK_ABUS . "/value" );
+        write_file("/sys/class/gpio/gpio" . $SCLK_ABUS . "/value", 0);
+       #system( "echo 1 >/sys/class/gpio/gpio" . $SCLK_ABUS . "/value" );
+        write_file("/sys/class/gpio/gpio" . $SCLK_ABUS . "/value", 1);
+        
         # MISO is Low, Again ... Ignore
 		my $Temp;
         for ( $count = 0 ; $count < 16 ; $count++ ) {
-            system( "echo 0 >/sys/class/gpio/gpio" . $SCLK_ABUS . "/value" );
+           #system( "echo 0 >/sys/class/gpio/gpio" . $SCLK_ABUS . "/value" );
+            write_file("/sys/class/gpio/gpio" . $SCLK_ABUS . "/value", 0);
             $Temp = read_file( "/sys/class/gpio/gpio" . $MISO_ABUS . "/value" );
             $ABUSDataBits[$count] = chomp($Temp);
-            system( "echo 1 >/sys/class/gpio/gpio" . $SCLK_ABUS . "/value" );
+            #system( "echo 1 >/sys/class/gpio/gpio" . $SCLK_ABUS . "/value" );
+            write_file("/sys/class/gpio/gpio" . $SCLK_ABUS . "/value", 1);
         }
 
         # Done Reading, Set CS and SCLK High
-        system( "echo 1 >/sys/class/gpio/gpio" . $SCLK_ABUS . "/value" );
-        system( "echo 1 >/sys/class/gpio/gpio" . $CS_ABUS . "/value" );
+        #system( "echo 1 >/sys/class/gpio/gpio" . $SCLK_ABUS . "/value" );
+        write_file("/sys/class/gpio/gpio" . $SCLK_ABUS . "/value", 1);
+        #system( "echo 1 >/sys/class/gpio/gpio" . $CS_ABUS . "/value" );
+        write_file("/sys/class/gpio/gpio" . $CS_ABUS . "/value", 1);
 
         # Convert Read Binary Data to Decimal
         $ABUSBitString = join( "", @ABUSDataBits ); #MSB Is Index ZERO!

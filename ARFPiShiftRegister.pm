@@ -4,6 +4,7 @@ use ET55930_6039_Environment;
 use ARFPiGenericSerial;
 use ARFPiGPIO;
 use Data::Dumper;
+use File::Slurp;
 
 sub BitBangShiftRegistersSetup {
     ## Input: None
@@ -92,23 +93,29 @@ sub BitBangShiftRegisterWrite {
     # on the desired RCLK.
 
     # Make sure the Latch Pin is High, Rising Edge Latches Bits from the Shift Reg to Storage (Output) Register
-    system( "echo 0 >/sys/class/gpio/gpio" . $Latch_ShiftReg . "/value" );    #Disabling Decoder sends all outputs high
+    #system( "echo 0 >/sys/class/gpio/gpio" . $Latch_ShiftReg . "/value" );    #Disabling Decoder sends all outputs high
+    write_file("/sys/class/gpio/gpio" . $Latch_ShiftReg . "/value", 0);
 
     # Decode Shift Register RCLK
-    system( "echo " . $GPIORegister[0] . " >/sys/class/gpio/gpio" . $EncodedCS0_ShiftReg . "/value" );
-    system( "echo " . $GPIORegister[1] . " >/sys/class/gpio/gpio" . $EncodedCS1_ShiftReg . "/value" );
-    system( "echo " . $GPIORegister[2] . " >/sys/class/gpio/gpio" . $EncodedCS2_ShiftReg . "/value" );
-    system( "echo " . $GPIORegister[3] . " >/sys/class/gpio/gpio" . $EncodedCS3_ShiftReg . "/value" );
+    #system( "echo " . $GPIORegister[0] . " >/sys/class/gpio/gpio" . $EncodedCS0_ShiftReg . "/value" );
+    #system( "echo " . $GPIORegister[1] . " >/sys/class/gpio/gpio" . $EncodedCS1_ShiftReg . "/value" );
+    #system( "echo " . $GPIORegister[2] . " >/sys/class/gpio/gpio" . $EncodedCS2_ShiftReg . "/value" );
+    #system( "echo " . $GPIORegister[3] . " >/sys/class/gpio/gpio" . $EncodedCS3_ShiftReg . "/value" );
+    
+    write_file("/sys/class/gpio/gpio" . $EncodedCS0_ShiftReg . "/value", $GPIORegister[0]);
+    write_file("/sys/class/gpio/gpio" . $EncodedCS1_ShiftReg . "/value", $GPIORegister[1]);
+    write_file("/sys/class/gpio/gpio" . $EncodedCS2_ShiftReg . "/value", $GPIORegister[2]);
+    write_file("/sys/class/gpio/gpio" . $EncodedCS3_ShiftReg . "/value", $GPIORegister[3]);
 
     # Enabling the Decoder will send the above decoded RCLK pin Low, in prep for the rising, Latching RCLK edge
-    system( "echo 1 >/sys/class/gpio/gpio" . $Latch_ShiftReg . "/value" );
-
+    #system( "echo 1 >/sys/class/gpio/gpio" . $Latch_ShiftReg . "/value" );
+	write_file("/sys/class/gpio/gpio" . $Latch_ShiftReg . "/value", 1);
     # Shift the bits out, LSB is Index ZERO! in the String
     ARFPiGenericSerial::BitBangShiftRegShiftNoLatch( $ReferenceToData );
 
     # Rising Edge of the RCLK Latches the bits to the output. Done by disabling the Decoder
-    system( "echo 0 >/sys/class/gpio/gpio" . $Latch_ShiftReg . "/value" );
-
+    #system( "echo 0 >/sys/class/gpio/gpio" . $Latch_ShiftReg . "/value" );
+	write_file("/sys/class/gpio/gpio" . $Latch_ShiftReg . "/value", 0);
     # Done
 }
 
