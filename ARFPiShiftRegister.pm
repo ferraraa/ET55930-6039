@@ -40,7 +40,7 @@ sub BitBangShiftRegisterWrite {
     ## Output: None
 
     my $ShiftRegRegister = shift;
-    my $Data             = shift;
+    my $ReferenceToData             = shift;
 	
     my @GPIORegister;
     if ( $ShiftRegRegister eq "ET1" ) {
@@ -104,7 +104,7 @@ sub BitBangShiftRegisterWrite {
     system( "echo 1 >/sys/class/gpio/gpio" . $Latch_ShiftReg . "/value" );
 
     # Shift the bits out, LSB is Index ZERO! in the String
-    ARFPiGenericSerial::BitBangShiftRegShiftNoLatch( $Data );
+    ARFPiGenericSerial::BitBangShiftRegShiftNoLatch( $ReferenceToData );
 
     # Rising Edge of the RCLK Latches the bits to the output. Done by disabling the Decoder
     system( "echo 0 >/sys/class/gpio/gpio" . $Latch_ShiftReg . "/value" );
@@ -113,17 +113,10 @@ sub BitBangShiftRegisterWrite {
 }
 
 sub BitBangShiftRegisterAllZeros {
+	my @AllZeroArray = [(0) x 32];
 	for (my $count = 0; $count < scalar(@ShiftRegNameArray); $count++) {
-		BitBangShiftRegisterWrite($ShiftRegNameArray[$count], [(0) x 32]);
+		BitBangShiftRegisterWrite($ShiftRegNameArray[$count], \@AllZeroArray);
 	}
-	open my $AllZeroHandle, "<", $ControlDir . "AllZeroState.txt";
-	my $AllZeroLine;
-	while ($AllZeroLine = <$AllZeroHANDLE>) {
-		print $CurrentRegStateFileHANDLE $AllZeroLine;
-		print $NextRegStateFileHANDLE $AllZeroLine;
-	}
-	seek $CurrentRegStateFileHANDLE, 0, 0;
-seek $NextRegStateFileHANDLE, 0, 0;
 	
 }
 

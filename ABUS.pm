@@ -3,6 +3,7 @@ use ET55930_6039_Environment;
 use ARFPiShiftRegister;
 use ARFConvert;
 use Data::Dumper;
+use File::Slurp;
 
 sub BitBangABUSADCRead {
     ## Input: None
@@ -44,10 +45,11 @@ sub BitBangABUSADCRead {
         system( "echo 1 >/sys/class/gpio/gpio" . $SCLK_ABUS . "/value" );
 
         # MISO is Low, Again ... Ignore
-
+		my $Temp;
         for ( $count = 0 ; $count < 16 ; $count++ ) {
             system( "echo 0 >/sys/class/gpio/gpio" . $SCLK_ABUS . "/value" );
-            $ABUSDataBits[$count] = system( "cat /sys/class/gpio/gpio" . $MISO_ABUS . "/value >> /dev/null" );
+            $Temp = read_file( "/sys/class/gpio/gpio" . $MISO_ABUS . "/value" );
+            $ABUSDataBits[$count] = chomp($Temp);
             system( "echo 1 >/sys/class/gpio/gpio" . $SCLK_ABUS . "/value" );
         }
 
@@ -68,51 +70,31 @@ sub BitBangABUSADCRead {
 
 sub BitBangABUSNodeRead {
 
-    my $ABUSNodeHash = shift;
-
-    ### Read In ALL Current Shift Register States, Mask Current States with Needed States for ABUS Node.
-    my @fileHANDLEArray;
-    my $CurrentRegState;
-    my @CurrentRegStateArray;
-    my @CurrentRegStateHashArray;
-    
-    while ( $CurrentRegState = <$CurrentRegStateFileHANDLE> ) {
-
-        # Read Current State of Register Line by Line
-        # First Value is the Register Name
-        # Next 32 Values are each of the Register Bits, LSB is Index ZERO! Closest to Register Name
-		chomp($CurrentRegState);
-        my @CurrentRegStateArray = split( "\t", $CurrentRegState );        
-		my $CurrentReg = shift(@CurrentRegStateArray);
-		my @NewRegStateArray;
-        # Mask the Current Register State with what is Needed
-        for ( my $bitcount = 0 ; $bitcount < scalar(@CurrentRegStateArray) ; $bitcount++ ) {
-            if ( $ABUSNodeHash->{ $CurrentReg }[$bitcount] eq "X" ) {
-                $NewRegStateArray[$bitcount] = $CurrentRegStateArray[$bitcount];
-            }
-            else {
-                $NewRegStateArray[$bitcount] = $ABUSNodeHash->{ $CurrentReg }[$bitcount];
-            }
+    my ($RefToCurrentRegStateHashArray, $ABUSNodeHash) = @_;
+    my $LengthOfReferencedArray = scalar @{$RefToCurrentRegStateHashArray};
+    for ( my $regcount = 0; $regcount < $LengthOfReferencedArray; $regcount++ ) {
+		my $RegisterToBeWritten = $RefToCurrentRegStateHashArray->[$regcount]->{RegName};
+        my $CurrentRegisterBits = $RefToCurrentRegStateHashArray->[$regcount]->{CurrentBits};
+        my $RegStateNeedsChanging = 0;
+        for (my $bitcount = 0; $bitcount < scalar @{$CurrentRegisterBits}; $bitcount++) {
+        	if ($ABUSNodeHash->{ $RegisterToBeWritten }[$bitcount] ne "X") {
+        		@{$CurrentRegisterBits}[$bitcount] = $ABUSNodeHash->{ $RegisterToBeWritten }[$bitcount];
+        		$RegStateNeedsChanging = 1;
+        		#print Dumper(@{$CurrentRegisterBits}[$bitcount]);
+        	}
         }
-        
-        # Write over the Current Register State File with what is about to be set as the State
-        my $NewRegStateBits = join( "\t", @NewRegStateArray );
-        unshift @NewRegStateArray, $CurrentReg;
-        my $NewRegStateLine = join( "\t", @NewRegStateArray );
-        print $NextRegStateFileHANDLE ($NewRegStateLine . "\n");
-        # Shift the bits out onto the current register, LSB is Index ZERO!
-        ARFPiShiftRegister::BitBangShiftRegisterWrite($CurrentReg, \@NewRegStateBits);
-        # Andy Verified the Shift Register LSB/MSB Index Zero Problem is GOOD! 5Jan2024
+        if ($RegStateNeedsChanging) {
+        ARFPiShiftRegister::BitBangShiftRegisterWrite($RegisterToBeWritten, $CurrentRegisterBits);
+        # Andy Verified the Shift Register LSB/MSB Index Zero Problem is GOOD! 5Jan2024        	
+        }
         
     }
 
-    seek $CurrentRegStateFileHANDLE, 0, 0;
-	seek $NextRegStateFileHANDLE, 0, 0;
     ### Read the ABUS Node
     my $ABUSReading_RawData = BitBangABUSADCRead();
     my $ABUSReading_Scaled = $ABUSReading_RawData * $ABUSNodeHash->{RScale};
 
-    return $ABUSReading_RawData;
+    return ($ABUSReading_RawData);
 }
 
 1;

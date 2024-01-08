@@ -9,7 +9,6 @@ use ABUS;
 #use Config qw(myconfig config_sh config_vars);
 use Data::Dumper;
 use CGI;
-use CGI::Pretty;
 use Sys::Hostname;
 use Time::HiRes;
 #use CGI::HTML::Functions;
@@ -22,6 +21,10 @@ use Time::HiRes;
 #use File::Basename;
 #use CGI::HTML::Functions;
 
+
+#######################################################################################
+##################### Environment Stuff
+#######################################################################################
 ## Create CGI Component
 my $cgi                            = CGI->new;
 my $host                           = hostname;
@@ -30,6 +33,8 @@ my $formpath                       = "/cgi-bin/ABUSScripts/" . $currentscriptfil
 my $htmldir                        = "/var/www/html/";
 
 my $WebJustStarted = 0;
+
+my ($CurrentRegStateFileHANDLE , @CurrentRegStateHashArray) = ET55930_6039_Environment::getCurrentRegisterState();
 
 #######################################################################################
 ##################### Start the HTML WebPage
@@ -85,7 +90,7 @@ print $cgi->div(
         -values => "Submit"
     )
 );
-$cgi->end_form;
+
 if (@readoption) {
 my $StartTime = time();
 # Make ABUS Measurement Table
@@ -94,9 +99,8 @@ my $CurrentABUSNodeName;
 my @CurrentABUSNodeNameSplit;
 my $ABUSPhysicalReading = 1;
 for ( my $count = 0 ; $count < scalar(@ABUSRegisterHashArray) ; $count++ ) {
-        $ABUSPhysicalReading = ABUS::BitBangABUSNodeRead( $ABUSRegisterHashArray[$count] );
+		        $ABUSPhysicalReading = ABUS::BitBangABUSNodeRead( \@CurrentRegStateHashArray, $ABUSRegisterHashArray[$count] );
         push @$ABUSTable, $cgi->td([$ABUSRegisterHashArray[$count]{Name}, $ABUSRegisterHashArray[$count]{ExpectedValue} , $ABUSPhysicalReading]);
-
 
 }
 
@@ -106,8 +110,20 @@ print $cgi->table( { border => 1, -width => '50%'},
 my $EndTime = time();
 print "<br><br><br>Elapsed Measurement Time: " . ($EndTime-$StartTime) . " Seconds<br><br><br>";
 }
-
+$cgi->end_form;
+#######################################################################################
+##################### Always Do This At the End of the Script!
+#######################################################################################
+seek $CurrentRegStateFileHANDLE, 0, 0;
+for ( my $regcount = 0; $regcount < scalar(@CurrentRegStateHashArray); $regcount++ ) {
+        # Next 32 Values are each of the Register Bits, LSB is Index ZERO! Closest to Register Name
+        my $RefToCurrentBitArray = $CurrentRegStateHashArray[$regcount]{CurrentBits};
+        my $CurrentBitsText = join("\t", @$RefToCurrentBitArray);
+        my $CurrentRegLine = $CurrentRegStateHashArray[$regcount]{RegName} . "\t" . $CurrentBitsText . "\n";
+		print $CurrentRegStateFileHANDLE $CurrentRegLine ;
+		
+       }
 close $CurrentRegStateFileHANDLE;
-close $NextRegStateFileHANDLE;
+
 
 print $cgi->end_html();

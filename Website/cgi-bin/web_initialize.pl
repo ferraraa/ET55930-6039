@@ -80,7 +80,7 @@ print $cgi->start_form(
     -action => $formpath
 );
 my @ShiftRegInitParam = $cgi->param("Shift Register Initialization");
-my @ShiftRegInitButtons = ( "Initialize", "Shut Down" );
+my @ShiftRegInitButtons = ( "Initialize As Bit Bang", "Shut Down" );
 my $ShiftRegInitDefault = "unchecked";
 my $ShiftRegPrevInitState;
 
@@ -92,7 +92,7 @@ if (   -e ( $GPIODir . "gpio" . $SCLK_ShiftReg )
     && -e ( $GPIODir . "gpio" . $EncodedCS2_ShiftReg )
     && -e ( $GPIODir . "gpio" . $EncodedCS3_ShiftReg ) )
 {
-    $ShiftRegInitDefault = "Initialize";
+    $ShiftRegInitDefault = "Initialize As Bit Bang";
     $ShiftRegPrevInitState = "Initialized";
 }
 else {
@@ -104,11 +104,11 @@ webpage::makeButtons(
     $cgi, 'radio',
     "Shift Register Initialization",
     "<br>Shift Register Initialization<br>",
-    \@ShiftRegInitButtons, $ShiftRegInitDefault
+    \@ShiftRegInitButtons, $ShiftRegInitDefault, 8
 );
 $cgi->end_form;
 
-if ( $ShiftRegInitParam[0] eq "Initialize" && $ShiftRegPrevInitState eq "Shut Down" ) {
+if ( $ShiftRegInitParam[0] eq "Initialize As Bit Bang" && $ShiftRegPrevInitState eq "Shut Down" ) {
     print "Initializing the Shift Register IO .....<br>";
     ARFPiShiftRegister::BitBangShiftRegistersSetup();
     ARFPiShiftRegister::BitBangShiftRegisterAllZeros();
@@ -126,7 +126,7 @@ print $cgi->start_form(
     -action => $formpath
 );
 my @ABUSSPIInitParam = $cgi->param("ABUS SPI Initialization");
-my @ABUSSPIInitButtons = ( "Initialize", "Shut Down" );
+my @ABUSSPIInitButtons = ( "Initialize As Bit Bang", "Shut Down" );
 my $ABUSSPIInitDefault = "unchecked";
 my $ABUSSPIPrevInitState;
 if (   -e ( $GPIODir . "gpio" . $MOSI_ABUS )
@@ -134,7 +134,7 @@ if (   -e ( $GPIODir . "gpio" . $MOSI_ABUS )
     && -e ( $GPIODir . "gpio" . $SCLK_ABUS )
     && -e ( $GPIODir . "gpio" . $CS_ABUS ) )
 {
-    $ABUSSPIInitDefault = "Initialize";
+    $ABUSSPIInitDefault = "Initialize As Bit Bang";
     $ABUSSPIPrevInitState = "Initialized";
 }
 else {
@@ -146,11 +146,11 @@ webpage::makeButtons(
     $cgi, 'radio',
     "ABUS SPI Initialization",
     "<br>ABUS SPI Initialization<br>",
-    \@ABUSSPIInitButtons, $ABUSSPIInitDefault
+    \@ABUSSPIInitButtons, $ABUSSPIInitDefault, 8
 );
 $cgi->end_form;
 
-if ( $ABUSSPIInitParam[0] eq "Initialize" && $ABUSSPIPrevInitState eq "Shut Down" ) {
+if ( $ABUSSPIInitParam[0] eq "Initialize As Bit Bang" && $ABUSSPIPrevInitState eq "Shut Down" ) {
     print "Initializing the ABUS SPI Bus ......<br>";
     ARFPiGenericSerial::BitBangSPI_Setup($SCLK_ABUS,$MOSI_ABUS,$MISO_ABUS);
     ARFPiGPIO::InitializeGPIO($CS_ABUS, "out", 1);
@@ -165,6 +165,4 @@ elsif ( $ABUSSPIInitParam[0] eq "Shut Down" && $ABUSSPIPrevInitState eq "Initial
 
 print "<br><br><br><br>";
 
-close $CurrentRegStateFileHANDLE;
-close $NextRegStateFileHANDLE;
 

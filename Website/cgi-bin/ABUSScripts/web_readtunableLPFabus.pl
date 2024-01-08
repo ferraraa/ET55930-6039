@@ -22,6 +22,9 @@ use Time::HiRes;
 #use File::Basename;
 #use CGI::HTML::Functions;
 
+#######################################################################################
+##################### Environment Stuff
+#######################################################################################
 ## Create CGI Component
 my $cgi                            = CGI->new;
 my $host                           = hostname;
@@ -30,6 +33,8 @@ my $formpath                       = "/cgi-bin/ABUSScripts/" . $currentscriptfil
 my $htmldir                        = "/var/www/html/";
 
 my $WebJustStarted = 0;
+
+my ($CurrentRegStateFileHANDLE , @CurrentRegStateHashArray) = ET55930_6039_Environment::getCurrentRegisterState();
 
 #######################################################################################
 ##################### Start the HTML WebPage
@@ -97,7 +102,7 @@ for ( my $count = 0 ; $count < scalar(@ABUSRegisterHashArray) ; $count++ ) {
     $CurrentABUSNodeName      = $ABUSRegisterHashArray[$count]{Name};
     @CurrentABUSNodeNameSplit = split( "_", $CurrentABUSNodeName );
     if ( $CurrentABUSNodeNameSplit[1] eq "TunableLPF" ) {
-        $ABUSPhysicalReading = ABUS::BitBangABUSNodeRead( $ABUSRegisterHashArray[$count] );
+        $ABUSPhysicalReading = ABUS::BitBangABUSNodeRead(\@CurrentRegStateHashArray, $ABUSRegisterHashArray[$count] );
         push @$ABUSTable, $cgi->td([$ABUSRegisterHashArray[$count]{Name}, $ABUSRegisterHashArray[$count]{ExpectedValue} , $ABUSPhysicalReading]);
     }
 
@@ -106,7 +111,7 @@ for ( my $count = 0 ; $count < scalar(@ABUSRegisterHashArray) ; $count++ ) {
     $CurrentABUSNodeName      = $ABUSRegisterHashArray[$count]{Name};
     @CurrentABUSNodeNameSplit = split( "_", $CurrentABUSNodeName );
     if ( $CurrentABUSNodeNameSplit[0] eq "ACOM" || $CurrentABUSNodeNameSplit[0] eq "VLNRef" ) {
-        $ABUSPhysicalReading = ABUS::BitBangABUSNodeRead( $ABUSRegisterHashArray[$count] );
+        $ABUSPhysicalReading = ABUS::BitBangABUSNodeRead(\@CurrentRegStateHashArray, $ABUSRegisterHashArray[$count] );
         push @$ABUSTable, $cgi->td([$ABUSRegisterHashArray[$count]{Name}, $ABUSRegisterHashArray[$count]{ExpectedValue} , $ABUSPhysicalReading]);
     }
 
@@ -118,6 +123,19 @@ print $cgi->table( { border => 1, -width => '50%'},
 my $EndTime = time();
 print "<br><br><br>Elapsed Measurement Time: " . ($EndTime-$StartTime) . " Seconds<br><br><br>";
 }
+#######################################################################################
+##################### Always Do This At the End of the Script!
+#######################################################################################
+seek $CurrentRegStateFileHANDLE, 0, 0;
+for ( my $regcount = 0; $regcount < scalar(@CurrentRegStateHashArray); $regcount++ ) {
+        # Next 32 Values are each of the Register Bits, LSB is Index ZERO! Closest to Register Name
+        my $RefToCurrentBitArray = $CurrentRegStateHashArray[$regcount]{CurrentBits};
+        my $CurrentBitsText = join("\t", @$RefToCurrentBitArray);
+        my $CurrentRegLine = $CurrentRegStateHashArray[$regcount]{RegName} . "\t" . $CurrentBitsText . "\n";
+		print $CurrentRegStateFileHANDLE $CurrentRegLine ;
+		
+       }
+close $CurrentRegStateFileHANDLE;
 
 
 print $cgi->end_html();

@@ -150,7 +150,7 @@ sub BitBangShiftRegShiftNoLatch {
     ## Input 1: Data to be shifted, in the form of a REFERENCE to a binary ARRAY, LSB is Index 0.
     ## Output: None
     ## This routine shifts data through a shift register bus
-    my $DataBits        = shift;
+    my $ReferenceToDataBits        = shift;
 	
     ##Shift Register Write Order of Operations:
 # Latch Should Be Held Low
@@ -163,9 +163,8 @@ sub BitBangShiftRegShiftNoLatch {
 # Etc Etc
 # Rising Edge of the Latch Latches ALL of the bit in the Shift Register to the Storage (Output) Register
     system( "echo 0 >/sys/class/gpio/gpio" . $Latch_ShiftReg . "/value" );
-    for ( my $count = 0 ; $count < scalar(@{$DataBits}) ; $count++ ) {
-    print Dumper($DataBits->[$count]);
-        system( "echo " . $DataBits->[$count] . " >/sys/class/gpio/gpio" . $Data_ShiftReg . "/value" );
+    for ( my $count = 0 ; $count < scalar(@{$ReferenceToDataBits}) ; $count++ ) {
+        system( "echo " . $ReferenceToDataBits->[$count] . " >/sys/class/gpio/gpio" . $Data_ShiftReg . "/value" );
         system( "echo 1 >/sys/class/gpio/gpio" . $SCLK_ShiftReg . "/value" );
         system( "echo 0 >/sys/class/gpio/gpio" . $SCLK_ShiftReg . "/value" );
     }
