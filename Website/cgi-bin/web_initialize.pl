@@ -165,6 +165,6 @@ elsif ( $ABUSSPIInitParam[0] eq "Shut Down" && $ABUSSPIPrevInitState eq "Initial
 
 print "<br><br><br><br>";
 
-close $CurrentRegStateHashArray[0]->FileHANDLE;
-close $NextRegStateHashArray[0]->FileHANDLE;
+close $CurrentRegStateFileHANDLE;
+close $NextRegStateFileHANDLE;
 

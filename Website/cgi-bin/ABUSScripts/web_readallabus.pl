@@ -107,5 +107,7 @@ my $EndTime = time();
 print "<br><br><br>Elapsed Measurement Time: " . ($EndTime-$StartTime) . " Seconds<br><br><br>";
 }
 
+close $CurrentRegStateFileHANDLE;
+close $NextRegStateFileHANDLE;
 
 print $cgi->end_html();

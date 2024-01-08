@@ -116,7 +116,14 @@ sub BitBangShiftRegisterAllZeros {
 	for (my $count = 0; $count < scalar(@ShiftRegNameArray); $count++) {
 		BitBangShiftRegisterWrite($ShiftRegNameArray[$count], [(0) x 32]);
 	}
-	system("cp " . $ControlDir . "AllZeroState.txt " . $ControlDir . "CurrentState.txt");
+	open my $AllZeroHandle, "<", $ControlDir . "AllZeroState.txt";
+	my $AllZeroLine;
+	while ($AllZeroLine = <$AllZeroHANDLE>) {
+		print $CurrentRegStateFileHANDLE $AllZeroLine;
+		print $NextRegStateFileHANDLE $AllZeroLine;
+	}
+	seek $CurrentRegStateFileHANDLE, 0, 0;
+seek $NextRegStateFileHANDLE, 0, 0;
 	
 }
 

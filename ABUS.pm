@@ -76,9 +76,7 @@ sub BitBangABUSNodeRead {
     my @CurrentRegStateArray;
     my @CurrentRegStateHashArray;
     
-	open( my $CurrentStateHANDLE, "<" , $ControlDir . "CurrentState.txt" );
-	open( my $NewStateHANDLE, ">" , $ControlDir . "NewState.txt" );
-    while ( $CurrentRegState = <$CurrentStateHANDLE> ) {
+    while ( $CurrentRegState = <$CurrentRegStateFileHANDLE> ) {
 
         # Read Current State of Register Line by Line
         # First Value is the Register Name
@@ -101,16 +99,15 @@ sub BitBangABUSNodeRead {
         my $NewRegStateBits = join( "\t", @NewRegStateArray );
         unshift @NewRegStateArray, $CurrentReg;
         my $NewRegStateLine = join( "\t", @NewRegStateArray );
-        print $NewStateHANDLE ($NewRegStateLine . "\n");
+        print $NextRegStateFileHANDLE ($NewRegStateLine . "\n");
         # Shift the bits out onto the current register, LSB is Index ZERO!
         ARFPiShiftRegister::BitBangShiftRegisterWrite($CurrentReg, \@NewRegStateBits);
         # Andy Verified the Shift Register LSB/MSB Index Zero Problem is GOOD! 5Jan2024
         
     }
-    close $CurrentStateHANDLE;
-    close $NewStateHANDLE;
-    system("mv " . $ControlDir . "NewState.txt " . $ControlDir . "CurrentState.txt");
-    
+
+    seek $CurrentRegStateFileHANDLE, 0, 0;
+	seek $NextRegStateFileHANDLE, 0, 0;
     ### Read the ABUS Node
     my $ABUSReading_RawData = BitBangABUSADCRead();
     my $ABUSReading_Scaled = $ABUSReading_RawData * $ABUSNodeHash->{RScale};
