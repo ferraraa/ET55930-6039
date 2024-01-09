@@ -11,6 +11,7 @@ use Data::Dumper;
 use CGI;
 use Sys::Hostname;
 use Time::HiRes;
+
 #use CGI::HTML::Functions;
 #use Cwd;
 #use filesystem;
@@ -21,7 +22,6 @@ use Time::HiRes;
 #use File::Basename;
 #use CGI::HTML::Functions;
 
-
 #######################################################################################
 ##################### Environment Stuff
 #######################################################################################
@@ -29,12 +29,12 @@ use Time::HiRes;
 my $cgi                            = CGI->new;
 my $host                           = hostname;
 my @currentscriptfilebeingexecuted = split( "/", $0 );
-my $formpath                       = "/cgi-bin/ABUSScripts/" . $currentscriptfilebeingexecuted[$#currentscriptfilebeingexecuted];
-my $htmldir                        = "/var/www/html/";
+my $formpath = "/cgi-bin/ABUSScripts/" . $currentscriptfilebeingexecuted[$#currentscriptfilebeingexecuted];
+my $htmldir  = "/var/www/html/";
 
 my $WebJustStarted = 0;
 
-my ($CurrentRegStateFileHANDLE , @CurrentRegStateHashArray) = ET55930_6039_Environment::getCurrentRegisterState();
+my ( $CurrentRegStateFileHANDLE, @CurrentRegStateHashArray ) = ET55930_6039_Environment::getCurrentRegisterState();
 
 #######################################################################################
 ##################### Start the HTML WebPage
@@ -48,7 +48,7 @@ print "<H2>Read ALL ABUS Nodes</H2>\n";
 my @resetoption = $cgi->param("Reset the Webpage");
 my @resetboxch  = $cgi->param("Check This If You Want to Reset the Form, Good When Funky Stuff Happens");
 
-if ( @resetoption ) {
+if (@resetoption) {
     $WebJustStarted = 1;
     $cgi->delete_all();
 }
@@ -76,9 +76,10 @@ print "<br><br><br><br>";
 #######################################################################################
 print "At the current state of this 'firmware', this measurement will take approximately 90 seconds<br>";
 print "There are 118 ABUS Nodes to be measured<br>";
-print "Also, each measurement is actually three ABUS measurements. The first is thrown away, the resulting 'Measurement Value' is the average of the final two<br>";
+print
+"Also, each measurement is actually three ABUS measurements. The first is thrown away, the resulting 'Measurement Value' is the average of the final two<br>";
 my $ReadButtonText = "Read ALL";
-my @readoption = $cgi->param($ReadButtonText);
+my @readoption     = $cgi->param($ReadButtonText);
 print $cgi->start_form(
     -method => 'post',
     -action => $formpath
@@ -92,38 +93,43 @@ print $cgi->div(
 );
 
 if (@readoption) {
-my $StartTime = time();
-# Make ABUS Measurement Table
-my $ABUSTable = [$cgi->th(["Node","Expected Value","Measured Value"])];
-my $CurrentABUSNodeName;
-my @CurrentABUSNodeNameSplit;
-my $ABUSPhysicalReading = 1;
-for ( my $count = 0 ; $count < scalar(@ABUSRegisterHashArray) ; $count++ ) {
-		        $ABUSPhysicalReading = ABUS::BitBangABUSNodeRead( \@CurrentRegStateHashArray, $ABUSRegisterHashArray[$count] );
-        push @$ABUSTable, $cgi->td([$ABUSRegisterHashArray[$count]{Name}, $ABUSRegisterHashArray[$count]{ExpectedValue} , $ABUSPhysicalReading]);
+    my $StartTime = time();
 
-}
+    # Make ABUS Measurement Table
+    my $ABUSTable = [ $cgi->th( [ "Node", "Expected Value", "Measured Value" ] ) ];
+    my $CurrentABUSNodeName;
+    my @CurrentABUSNodeNameSplit;
+    my $ABUSPhysicalReading = 1;
+    for ( my $count = 0 ; $count < scalar(@ABUSRegisterHashArray) ; $count++ ) {
+        $ABUSPhysicalReading = ABUS::BitBangABUSNodeRead( \@CurrentRegStateHashArray, $ABUSRegisterHashArray[$count] );
+        push @$ABUSTable,
+          $cgi->td(
+            [
+                $ABUSRegisterHashArray[$count]{Name}, $ABUSRegisterHashArray[$count]{ExpectedValue},
+                $ABUSPhysicalReading
+            ]
+          );
 
-print $cgi->table( { border => 1, -width => '50%'},
-                   $cgi->Tr( $ABUSTable),
-                 );
-my $EndTime = time();
-print "<br><br><br>Elapsed Measurement Time: " . ($EndTime-$StartTime) . " Seconds<br><br><br>";
+    }
+
+    print $cgi->table( { border => 1, -width => '50%' }, $cgi->Tr($ABUSTable), );
+    my $EndTime = time();
+    print "<br><br><br>Elapsed Measurement Time: " . ( $EndTime - $StartTime ) . " Seconds<br><br><br>";
 }
 $cgi->end_form;
 #######################################################################################
 ##################### Always Do This At the End of the Script!
 #######################################################################################
 seek $CurrentRegStateFileHANDLE, 0, 0;
-for ( my $regcount = 0; $regcount < scalar(@CurrentRegStateHashArray); $regcount++ ) {
-        # Next 32 Values are each of the Register Bits, LSB is Index ZERO! Closest to Register Name
-        my $RefToCurrentBitArray = $CurrentRegStateHashArray[$regcount]{CurrentBits};
-        my $CurrentBitsText = join("\t", @$RefToCurrentBitArray);
-        my $CurrentRegLine = $CurrentRegStateHashArray[$regcount]{RegName} . "\t" . $CurrentBitsText . "\n";
-		print $CurrentRegStateFileHANDLE $CurrentRegLine ;
-		
-       }
-close $CurrentRegStateFileHANDLE;
+for ( my $regcount = 0 ; $regcount < scalar(@CurrentRegStateHashArray) ; $regcount++ ) {
 
+    # Next 32 Values are each of the Register Bits, LSB is Index ZERO! Closest to Register Name
+    my $RefToCurrentBitArray = $CurrentRegStateHashArray[$regcount]{CurrentBits};
+    my $CurrentBitsText      = join( "\t", @$RefToCurrentBitArray );
+    my $CurrentRegLine       = $CurrentRegStateHashArray[$regcount]{RegName} . "\t" . $CurrentBitsText . "\n";
+    print $CurrentRegStateFileHANDLE $CurrentRegLine;
+
+}
+close $CurrentRegStateFileHANDLE;
 
 print $cgi->end_html();

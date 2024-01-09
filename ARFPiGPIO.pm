@@ -10,9 +10,9 @@ sub InitializeGPIO {
     my $GPIONum   = shift;
     my $Direction = shift;
     my $State     = shift;
-	
+
     system( "echo " . $GPIONum . " >/sys/class/gpio/export" );
-    system( "sudo chmod -R 777 /sys/class/gpio/gpio*");
+    system("sudo chmod -R 777 /sys/class/gpio/gpio*");
     system( "echo " . $Direction . " >/sys/class/gpio/gpio" . $GPIONum . "/direction" );
     system( "echo " . $State . " >/sys/class/gpio/gpio" . $GPIONum . "/value" );
 

@@ -169,7 +169,7 @@ while ( $ABUSRegLine = <$ABUSRegFileHANDLE> ) {
     my %ABUSRegisterHash =
       (    # Need to be my %blah to recreate the Hash. Only way to make an array of hashes in a loop.... IDK.
         Name               => shift(@ParsedABUSRegLine),
-        ExpectedValue	   => shift(@ParsedABUSRegLine),
+        ExpectedValue      => shift(@ParsedABUSRegLine),
         RScale             => shift(@ParsedABUSRegLine),
         ADCRange           => shift(@ParsedABUSRegLine),
         BotGr3             => [ (X) x 32 ],
@@ -188,7 +188,7 @@ while ( $ABUSRegLine = <$ABUSRegFileHANDLE> ) {
         $ABUSRegisterHash{ $ParsedABUSRegisterNames[$count] }[ $ParsedABUSRegisterBits[$count] ] =
           $ParsedABUSRegLine[$count];
     }
-	
+
     # Make Array of Hashes
     push( @ABUSRegisterHashArray, \%ABUSRegisterHash );
 
@@ -196,6 +196,7 @@ while ( $ABUSRegLine = <$ABUSRegFileHANDLE> ) {
 }
 
 close $ABUSRegFileHANDLE;
+
 #$/ = "\n";    #Return to Linux New Line
 ###################################
 ## Read in ABUS Register Mapping ##
@@ -205,7 +206,7 @@ close $ABUSRegFileHANDLE;
 ## Read in PathID Register Mapping ##
 ###################################
 
-$/ = "\r\n";  #Windoze New Line is Terrible
+$/ = "\r\n";    #Windoze New Line is Terrible
 my %PathIDRegisterHash;
 our @PathIDRegisterHashArray;
 my $PathIDRegLine;
@@ -381,24 +382,22 @@ $EnableLine = <$EnableFileHANDLE>;    # This line is header line
 chomp($EnableLine);
 my @ParsedEnableHeader = split( '\t', $EnableLine );
 
-
 $EnableLine = <$EnableFileHANDLE>;
 chomp($EnableLine);
 my @EnableRegisterNames = split( '\t', $EnableLine );
-
 
 $EnableLine = <$EnableFileHANDLE>;
 chomp($EnableLine);
 my @EnableRegisterBits = split( '\t', $EnableLine );
 
-for ( my $count = 0; $count < scalar(@EnableRegisterBits); $count++ ) {
+for ( my $count = 0 ; $count < scalar(@EnableRegisterBits) ; $count++ ) {
 
     # Create an ABUS Node Hash, prepopulate the registers with Don't Cares 'Xs'
     my %EnableHash =
       (    # Need to be my %blah to recreate the Hash. Only way to make an array of hashes in a loop.... IDK.
         Name               => $ParsedEnableHeader[$count],
-        RegName				=> $EnableRegisterNames[$count],
-        RegBit				=> $EnableRegisterBits[$count],
+        RegName            => $EnableRegisterNames[$count],
+        RegBit             => $EnableRegisterBits[$count],
         BotGr3             => [ (X) x 32 ],
         ET1                => [ (X) x 32 ],
         ET2                => [ (X) x 32 ],
@@ -415,7 +414,7 @@ for ( my $count = 0; $count < scalar(@EnableRegisterBits); $count++ ) {
         $EnableRegisterHash{ $ShiftRegNameArray[$regcount] }[ $EnableRegisterBits[$count] ] =
           1;
     }
-	
+
     # Make Array of Hashes
     push( @EnableHashArray, \%EnableHash );
 
@@ -423,51 +422,54 @@ for ( my $count = 0; $count < scalar(@EnableRegisterBits); $count++ ) {
 }
 
 close $EnableFileHANDLE;
+
 #$/ = "\n";    #Return to Linux New Line
 ###################################
 ## Read in Enable Mapping ##
 ###################################
 
-
-
-
 ###################################
 ## Read in Current Register State ##
 ###################################
 sub getCurrentRegisterState {
-#$/ = "\r\n";    #Windoze New Line is Terrible
-my %CurrentRegStateHash;
-my @CurrentRegStateHashArray;
-my $CurrentRegStateLine;
 
-# Open Register File
-open my $CurrentRegStateFileHANDLE, "+<",$ControlDir . "CurrentState.txt" or die;
-#seek $CurrentRegStateFileHANDLE, 0, 0;
-while ($CurrentRegStateLine = <$CurrentRegStateFileHANDLE> ) {
-	
-	chomp $CurrentRegStateLine;
-	my @CurrentRegStateArray = split ("\t", $CurrentRegStateLine);
-    # Create an ABUS Node Hash, prepopulate the registers with Don't Cares 'Xs'
-    my %CurrentRegisterStateHash =
-      (    # Need to be my %blah to recreate the Hash. Only way to make an array of hashes in a loop.... IDK.
-        RegName               => shift(@CurrentRegStateArray),
-        CurrentBits             => \@CurrentRegStateArray
-      );
-    # Make Array of Hashes
-    push( @CurrentRegStateHashArray, \%CurrentRegisterStateHash );
-	#print Dumper("Test");
+    #$/ = "\r\n";    #Windoze New Line is Terrible
+    my %CurrentRegStateHash;
+    my @CurrentRegStateHashArray;
+    my $CurrentRegStateLine;
 
+    # Open Register File
+    open my $CurrentRegStateFileHANDLE, "+<", $ControlDir . "CurrentState.txt" or die;
+
+    #seek $CurrentRegStateFileHANDLE, 0, 0;
+    while ( $CurrentRegStateLine = <$CurrentRegStateFileHANDLE> ) {
+
+        chomp $CurrentRegStateLine;
+        my @CurrentRegStateArray = split( "\t", $CurrentRegStateLine );
+
+        # Create an ABUS Node Hash, prepopulate the registers with Don't Cares 'Xs'
+        my %CurrentRegisterStateHash =
+          (    # Need to be my %blah to recreate the Hash. Only way to make an array of hashes in a loop.... IDK.
+            RegName     => shift(@CurrentRegStateArray),
+            CurrentBits => \@CurrentRegStateArray
+          );
+
+        # Make Array of Hashes
+        push( @CurrentRegStateHashArray, \%CurrentRegisterStateHash );
+
+        #print Dumper("Test");
+
+    }
+
+    seek $CurrentRegStateFileHANDLE, 0, 0;
+
+    return ( $CurrentRegStateFileHANDLE, @CurrentRegStateHashArray );
 }
 
-seek $CurrentRegStateFileHANDLE, 0, 0;
-
-return ($CurrentRegStateFileHANDLE , @CurrentRegStateHashArray);
-}
 #$/ = "\n";    #Return to Linux New Line
 ###################################
 ## Read in Current Register State ##
 ###################################
-
 
 1;
 

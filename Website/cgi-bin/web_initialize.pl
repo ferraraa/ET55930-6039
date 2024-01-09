@@ -27,9 +27,8 @@ use Sys::Hostname;
 my $cgi                            = CGI->new;
 my $host                           = hostname;
 my @currentscriptfilebeingexecuted = split( "/", $0 );
-my $formpath                       = "/cgi-bin/"
-  . $currentscriptfilebeingexecuted[$#currentscriptfilebeingexecuted];
-my $htmldir = "/var/www/html/";
+my $formpath                       = "/cgi-bin/" . $currentscriptfilebeingexecuted[$#currentscriptfilebeingexecuted];
+my $htmldir                        = "/var/www/html/";
 
 my $WebJustStarted = 0;
 
@@ -44,10 +43,9 @@ print "<H2>Do this before bringing up the Main Power Supplies</H2>\n";
 ## Check to see what options have been selected
 
 my @resetoption = $cgi->param("Reset");
-my @resetboxch  = $cgi->param(
-    "Check This If You Want to Reset the Form, Good When Funky Stuff Happens");
+my @resetboxch  = $cgi->param("Check This If You Want to Reset the Form, Good When Funky Stuff Happens");
 
-if ( @resetoption ) {
+if (@resetoption) {
     $WebJustStarted = 1;
     $cgi->delete_all();
 }
@@ -79,7 +77,7 @@ print $cgi->start_form(
     -method => 'post',
     -action => $formpath
 );
-my @ShiftRegInitParam = $cgi->param("Shift Register Initialization");
+my @ShiftRegInitParam   = $cgi->param("Shift Register Initialization");
 my @ShiftRegInitButtons = ( "Initialize As Bit Bang", "Shut Down" );
 my $ShiftRegInitDefault = "unchecked";
 my $ShiftRegPrevInitState;
@@ -92,11 +90,11 @@ if (   -e ( $GPIODir . "gpio" . $SCLK_ShiftReg )
     && -e ( $GPIODir . "gpio" . $EncodedCS2_ShiftReg )
     && -e ( $GPIODir . "gpio" . $EncodedCS3_ShiftReg ) )
 {
-    $ShiftRegInitDefault = "Initialize As Bit Bang";
+    $ShiftRegInitDefault   = "Initialize As Bit Bang";
     $ShiftRegPrevInitState = "Initialized";
 }
 else {
-    $ShiftRegInitDefault = "Shut Down";
+    $ShiftRegInitDefault   = "Shut Down";
     $ShiftRegPrevInitState = "Shut Down";
 }
 
@@ -125,7 +123,7 @@ print $cgi->start_form(
     -method => 'post',
     -action => $formpath
 );
-my @ABUSSPIInitParam = $cgi->param("ABUS SPI Initialization");
+my @ABUSSPIInitParam   = $cgi->param("ABUS SPI Initialization");
 my @ABUSSPIInitButtons = ( "Initialize As Bit Bang", "Shut Down" );
 my $ABUSSPIInitDefault = "unchecked";
 my $ABUSSPIPrevInitState;
@@ -134,11 +132,11 @@ if (   -e ( $GPIODir . "gpio" . $MOSI_ABUS )
     && -e ( $GPIODir . "gpio" . $SCLK_ABUS )
     && -e ( $GPIODir . "gpio" . $CS_ABUS ) )
 {
-    $ABUSSPIInitDefault = "Initialize As Bit Bang";
+    $ABUSSPIInitDefault   = "Initialize As Bit Bang";
     $ABUSSPIPrevInitState = "Initialized";
 }
 else {
-    $ABUSSPIInitDefault = "Shut Down";
+    $ABUSSPIInitDefault   = "Shut Down";
     $ABUSSPIPrevInitState = "Shut Down";
 }
 
@@ -152,17 +150,16 @@ $cgi->end_form;
 
 if ( $ABUSSPIInitParam[0] eq "Initialize As Bit Bang" && $ABUSSPIPrevInitState eq "Shut Down" ) {
     print "Initializing the ABUS SPI Bus ......<br>";
-    ARFPiGenericSerial::BitBangSPI_Setup($SCLK_ABUS,$MOSI_ABUS,$MISO_ABUS);
-    ARFPiGPIO::InitializeGPIO($CS_ABUS, "out", 1);
+    ARFPiGenericSerial::BitBangSPI_Setup( $SCLK_ABUS, $MOSI_ABUS, $MISO_ABUS );
+    ARFPiGPIO::InitializeGPIO( $CS_ABUS, "out", 1 );
     print "Done<br>";
 }
 elsif ( $ABUSSPIInitParam[0] eq "Shut Down" && $ABUSSPIPrevInitState eq "Initialized" ) {
     print "Shutting Down/ Cleaning Up the ABUS SPI Bus .....<br>";
-    ARFPiGenericSerial::BitBangSPI_CleanUp($SCLK_ABUS,$MOSI_ABUS,$MISO_ABUS);
+    ARFPiGenericSerial::BitBangSPI_CleanUp( $SCLK_ABUS, $MOSI_ABUS, $MISO_ABUS );
     ARFPiGPIO::UninitializeGPIO($CS_ABUS);
     print "Done<br>";
 }
 
 print "<br><br><br><br>";
-
 

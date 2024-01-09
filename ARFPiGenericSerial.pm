@@ -15,7 +15,7 @@ sub BitBangSPI_Setup {
     system( "echo " . $SCLKpin . " >/sys/class/gpio/export" );
     system( "echo " . $MOSIpin . " >/sys/class/gpio/export" );
     system( "echo " . $MISOpin . " >/sys/class/gpio/export" );
-    system( "sudo chmod -R 777 /sys/class/gpio/gpio*");
+    system("sudo chmod -R 777 /sys/class/gpio/gpio*");
 
     system( "echo out >/sys/class/gpio/gpio" . $SCLKpin . "/direction" );
     system( "echo out >/sys/class/gpio/gpio" . $MOSIpin . "/direction" );
@@ -49,7 +49,7 @@ sub BitBangShiftReg_Setup {
     system( "echo " . $SCLK_ShiftReg . " >/sys/class/gpio/export" );
     system( "echo " . $Data_ShiftReg . " >/sys/class/gpio/export" );
     system( "echo " . $Latch_ShiftReg . " >/sys/class/gpio/export" );
-    system( "sudo chmod -R 777 /sys/class/gpio/gpio*");
+    system("sudo chmod -R 777 /sys/class/gpio/gpio*");
 
     system( "echo out >/sys/class/gpio/gpio" . $SCLK_ShiftReg . "/direction" );
     system( "echo out >/sys/class/gpio/gpio" . $Data_ShiftReg . "/direction" );
@@ -150,8 +150,8 @@ sub BitBangShiftRegShiftNoLatch {
     ## Input 1: Data to be shifted, in the form of a REFERENCE to a binary ARRAY, LSB is Index 0.
     ## Output: None
     ## This routine shifts data through a shift register bus
-    my $ReferenceToDataBits        = shift;
-	
+    my $ReferenceToDataBits = shift;
+
     ##Shift Register Write Order of Operations:
 # Latch Should Be Held Low
 # First Data Bit is Sent and Held
@@ -163,7 +163,7 @@ sub BitBangShiftRegShiftNoLatch {
 # Etc Etc
 # Rising Edge of the Latch Latches ALL of the bit in the Shift Register to the Storage (Output) Register
     system( "echo 0 >/sys/class/gpio/gpio" . $Latch_ShiftReg . "/value" );
-    for ( my $count = 0 ; $count < scalar(@{$ReferenceToDataBits}) ; $count++ ) {
+    for ( my $count = 0 ; $count < scalar( @{$ReferenceToDataBits} ) ; $count++ ) {
         system( "echo " . $ReferenceToDataBits->[$count] . " >/sys/class/gpio/gpio" . $Data_ShiftReg . "/value" );
         system( "echo 1 >/sys/class/gpio/gpio" . $SCLK_ShiftReg . "/value" );
         system( "echo 0 >/sys/class/gpio/gpio" . $SCLK_ShiftReg . "/value" );
