@@ -1,27 +1,19 @@
 #!/usr/bin/perl -w
 use strict;
-
-#use lib '/projects/WebsiteModules';
+use warnings;
 use lib '/projects/ET55930-6039';
 use ET55930_6039_Environment;
+use lib '/projects/WebsiteModules';
+use webpage;
+use lib $ENV{PERL_GPIB} || "/projects/gpib";
+use VXI11::Client;
+use Generic_Instrument;
 use ABUS;
-
-#use Config qw(myconfig config_sh config_vars);
+use Config qw(myconfig config_sh config_vars);
 use Data::Dumper;
 use CGI;
-use CGI::Pretty;
 use Sys::Hostname;
 use Time::HiRes;
-
-#use CGI::HTML::Functions;
-#use Cwd;
-#use filesystem;
-#use CGI::Easy::SendFile;
-#use webpage;
-#use rscriptgen;
-#use File::Temp;
-#use File::Basename;
-#use CGI::HTML::Functions;
 
 #######################################################################################
 ##################### Environment Stuff
@@ -38,47 +30,24 @@ my $WebJustStarted = 0;
 my ( $CurrentRegStateFileHANDLE, @CurrentRegStateHashArray ) = ET55930_6039_Environment::getCurrentRegisterState();
 
 #######################################################################################
-##################### Start the HTML WebPage
+##################### Start the HTML WebPage, Makes the Reset Button and Header
 #######################################################################################
-print "Content-type: text/html\n\n";
-print $cgi->start_html("ABUS");
-print $cgi->a( { href => ( "http://" . $host . "/" ) }, "Return Home" );
-print "<H2>Read LiveOak Bias Points</H2>\n";
-## Check to see what options have been selected
+webpage::makeForm_WebpageHeaderAndyStyle( $cgi, $formpath, "ABUS", "Read LiveOak Bias Points" );
+print "<br>";
 
-my @resetoption = $cgi->param("Reset the Webpage");
-my @resetboxch  = $cgi->param("Check This If You Want to Reset the Form, Good When Funky Stuff Happens");
-
-if (@resetoption) {
-    $WebJustStarted = 1;
-    $cgi->delete_all();
-}
-
-#print Dumper($cgi);
-
-## Make Reset Button
-print $cgi->start_form(
-    -method => 'post',
-    -action => $formpath
-);
-print $cgi->div(
-    $cgi->submit(
-        -name   => "Reset the Webpage",
-        -id     => "Reset the Webpage",
-        -values => "Submit"
-    )
-);
-$cgi->end_form;
-
-print "<br><br><br><br>";
+#######################################################################################
+##################### Display Prompt to Measure ABUS Node with LAN Multimeter
+#######################################################################################
+my $DMM = ABUS::makeForm_ABUSDMMInstrumentQuery($cgi);
+print "<br><br><br>";
 
 #######################################################################################
 ##################### Print List of ABUS Nodes
 #######################################################################################
 print "At the current state of this 'firmware', this measurement will take approximately 25 seconds<br>";
 print "There are about 31 ABUS Nodes to be measured<br>";
-print
-"Also, each measurement is actually three ABUS measurements. The first is thrown away, the resulting 'Measurement Value' is the average of the final two<br>";
+print "Also, each measurement is actually three ABUS measurements.<br>";
+print "The first is thrown away, the resulting 'Measurement Value' is the average of the final two<br><br>";
 my $ReadButtonText = "Read LiveOak Bias Points";
 my @readoption     = $cgi->param($ReadButtonText);
 print $cgi->start_form(
@@ -98,10 +67,11 @@ if (@readoption) {
     my $StartTime = time();
 
     # Make ABUS Measurement Table
-    my $ABUSTable = [ $cgi->th( [ "Node", "Expected Value", "Measured Value" ] ) ];
+    my $ABUSTable = [ $cgi->th( [ "Node", "Expected Value", "ADC Measured Value", "DMM Measured Value" ] ) ];
     my $CurrentABUSNodeName;
     my @CurrentABUSNodeNameSplit;
     my $ABUSPhysicalReading = 1;
+    my $DMMMeasurement;
     for ( my $count = 0 ; $count < scalar(@ABUSRegisterHashArray) ; $count++ ) {
         $CurrentABUSNodeName      = $ABUSRegisterHashArray[$count]{Name};
         @CurrentABUSNodeNameSplit = split( "_", $CurrentABUSNodeName );
@@ -109,13 +79,13 @@ if (@readoption) {
             || $CurrentABUSNodeNameSplit[$#CurrentABUSNodeNameSplit] eq "VGG"
             || $CurrentABUSNodeNameSplit[$#CurrentABUSNodeNameSplit] eq "IDD" )
         {
-            $ABUSPhysicalReading =
-              ABUS::BitBangABUSNodeRead( \@CurrentRegStateHashArray, $ABUSRegisterHashArray[$count] );
+            ($ABUSPhysicalReading, $DMMMeasurement) =
+              ABUS::BitBangABUSNodeRead( \@CurrentRegStateHashArray, $ABUSRegisterHashArray[$count], $DMM );
             push @$ABUSTable,
               $cgi->td(
                 [
                     $ABUSRegisterHashArray[$count]{Name}, $ABUSRegisterHashArray[$count]{ExpectedValue},
-                    $ABUSPhysicalReading
+                    $ABUSPhysicalReading,                 $DMMMeasurement
                 ]
               );
         }
@@ -125,13 +95,13 @@ if (@readoption) {
         $CurrentABUSNodeName      = $ABUSRegisterHashArray[$count]{Name};
         @CurrentABUSNodeNameSplit = split( "_", $CurrentABUSNodeName );
         if ( $CurrentABUSNodeNameSplit[0] eq "ACOM" || $CurrentABUSNodeNameSplit[0] eq "VLNRef" ) {
-            $ABUSPhysicalReading =
-              ABUS::BitBangABUSNodeRead( \@CurrentRegStateHashArray, $ABUSRegisterHashArray[$count] );
+            ($ABUSPhysicalReading, $DMMMeasurement) =
+              ABUS::BitBangABUSNodeRead( \@CurrentRegStateHashArray, $ABUSRegisterHashArray[$count], $DMM );
             push @$ABUSTable,
               $cgi->td(
                 [
                     $ABUSRegisterHashArray[$count]{Name}, $ABUSRegisterHashArray[$count]{ExpectedValue},
-                    $ABUSPhysicalReading
+                    $ABUSPhysicalReading,                 $DMMMeasurement
                 ]
               );
         }
